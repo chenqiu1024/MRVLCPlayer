@@ -31,9 +31,23 @@
     
     player.bounds = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.width / 16 * 9);
     player.center = self.view.center;
-//    player.mediaURL = [[NSBundle mainBundle] URLForResource:@"1" withExtension:@"mkv"];
     
-    player.mediaURL = [NSURL fileURLWithPath:@"/Users/Maru/Documents/Media/Movie/1.mkv"];
+    NSString* docDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSEnumerator<NSString* >* fileEnumerator = [[NSFileManager defaultManager] enumeratorAtPath:docDirectory];
+    for (NSString* file in fileEnumerator)
+    {
+        NSString* ext = [file pathExtension].lowercaseString;
+        if ([ext isEqualToString:@"mov"] || [ext isEqualToString:@"mp4"])
+        {
+            player.mediaURL = [NSURL fileURLWithPath:[docDirectory stringByAppendingPathComponent:file]];
+            break;
+        }
+    }
+    if (!player.mediaURL)
+    {
+        player.mediaURL = [[NSBundle mainBundle] URLForResource:@"02" withExtension:@"mov"];
+        //    player.mediaURL = [NSURL fileURLWithPath:@"/Users/Maru/Documents/Media/Movie/1.mkv"];
+    }
 
     [player showInView:self.view.window];
 }

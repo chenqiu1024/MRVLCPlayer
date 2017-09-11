@@ -14,7 +14,6 @@
 		18D628A51C7DC3B800DDA9E7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18D628A31C7DC3B800DDA9E7 /* Main.storyboard */; };
 		18D628A71C7DC3B800DDA9E7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18D628A61C7DC3B800DDA9E7 /* Assets.xcassets */; };
 		18D628AA1C7DC3B800DDA9E7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18D628A81C7DC3B800DDA9E7 /* LaunchScreen.storyboard */; };
-		18D628B21C7DC3CC00DDA9E7 /* MobileVLCKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D628B11C7DC3CC00DDA9E7 /* MobileVLCKit.framework */; };
 		18D628DF1C7DC4AB00DDA9E7 /* libbz2.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D628D31C7DC4AB00DDA9E7 /* libbz2.1.0.dylib */; };
 		18D628E01C7DC4AB00DDA9E7 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D628D41C7DC4AB00DDA9E7 /* libz.1.dylib */; };
 		18D628E11C7DC4AB00DDA9E7 /* libc++.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 18D628D51C7DC4AB00DDA9E7 /* libc++.1.dylib */; };
@@ -54,6 +53,7 @@
 		42E8F5941C8E7F6600A3A595 /* Sound Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5911C8E7F6600A3A595 /* Sound Icon.png */; };
 		42E8F5951C8E7F6600A3A595 /* Sound Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5921C8E7F6600A3A595 /* Sound Icon@2x.png */; };
 		42E8F5961C8E7F6600A3A595 /* Sound Icon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5931C8E7F6600A3A595 /* Sound Icon@3x.png */; };
+		52CAA9CD1F66CE6500351014 /* MobileVLCKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,7 +69,6 @@
 		18D628A61C7DC3B800DDA9E7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		18D628A91C7DC3B800DDA9E7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		18D628AB1C7DC3B800DDA9E7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		18D628B11C7DC3CC00DDA9E7 /* MobileVLCKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileVLCKit.framework; path = ../../../build/MobileVLCKit.framework; sourceTree = "<group>"; };
 		18D628D31C7DC4AB00DDA9E7 /* libbz2.1.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.1.0.dylib; path = ../../../../../../usr/lib/libbz2.1.0.dylib; sourceTree = "<group>"; };
 		18D628D41C7DC4AB00DDA9E7 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
 		18D628D51C7DC4AB00DDA9E7 /* libc++.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.1.dylib"; path = "../../../../../../usr/lib/libc++.1.dylib"; sourceTree = "<group>"; };
@@ -114,6 +113,7 @@
 		42E8F5911C8E7F6600A3A595 /* Sound Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon.png"; sourceTree = "<group>"; };
 		42E8F5921C8E7F6600A3A595 /* Sound Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon@2x.png"; sourceTree = "<group>"; };
 		42E8F5931C8E7F6600A3A595 /* Sound Icon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon@3x.png"; sourceTree = "<group>"; };
+		52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileVLCKit.framework; path = "../MobileVLCKit-binary/MobileVLCKit.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52CAA9CD1F66CE6500351014 /* MobileVLCKit.framework in Frameworks */,
 				18D628E61C7DC4AB00DDA9E7 /* CoreAudio.framework in Frameworks */,
 				18D628E81C7DC4AB00DDA9E7 /* CoreMedia.framework in Frameworks */,
 				18D628E51C7DC4AB00DDA9E7 /* AVFoundation.framework in Frameworks */,
@@ -129,7 +130,6 @@
 				18D628EA1C7DC4AB00DDA9E7 /* AudioToolbox.framework in Frameworks */,
 				18D628E21C7DC4AB00DDA9E7 /* libiconv.2.dylib in Frameworks */,
 				18D628E41C7DC4AB00DDA9E7 /* MediaPlayer.framework in Frameworks */,
-				18D628B21C7DC3CC00DDA9E7 /* MobileVLCKit.framework in Frameworks */,
 				18D628E91C7DC4AB00DDA9E7 /* VideoToolbox.framework in Frameworks */,
 				18D628E11C7DC4AB00DDA9E7 /* libc++.1.dylib in Frameworks */,
 				18D628E31C7DC4AB00DDA9E7 /* libstdc++.6.0.9.dylib in Frameworks */,
@@ -189,6 +189,7 @@
 			children = (
 				18D628991C7DC3B800DDA9E7 /* MRVLCPlayer */,
 				18D628981C7DC3B800DDA9E7 /* Products */,
+				52CAA9CB1F66CE6500351014 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -229,7 +230,6 @@
 				18D628D51C7DC4AB00DDA9E7 /* libc++.1.dylib */,
 				18D628D61C7DC4AB00DDA9E7 /* libiconv.2.dylib */,
 				18D628D71C7DC4AB00DDA9E7 /* libstdc++.6.0.9.dylib */,
-				18D628B11C7DC3CC00DDA9E7 /* MobileVLCKit.framework */,
 				18D628D81C7DC4AB00DDA9E7 /* MediaPlayer.framework */,
 				18D628D91C7DC4AB00DDA9E7 /* AVFoundation.framework */,
 				18D628DA1C7DC4AB00DDA9E7 /* CoreAudio.framework */,
@@ -249,6 +249,14 @@
 				4248F61B1C9E9E2300835E8E /* 02.mov */,
 			);
 			path = Resource;
+			sourceTree = "<group>";
+		};
+		52CAA9CB1F66CE6500351014 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -282,7 +290,7 @@
 				TargetAttributes = {
 					18D628961C7DC3B800DDA9E7 = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = 678WD436L9;
+						DevelopmentTeam = QBAB3CS86A;
 					};
 				};
 			};
@@ -465,8 +473,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libstdc++";
+				DEVELOPMENT_TEAM = QBAB3CS86A;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../../Resource/SDK/MobileVLCKit-binary\"";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
 				INFOPLIST_FILE = MRVLCPlayer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -480,8 +490,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libstdc++";
+				DEVELOPMENT_TEAM = QBAB3CS86A;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../../Resource/SDK/MobileVLCKit-binary\"";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
 				INFOPLIST_FILE = MRVLCPlayer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
