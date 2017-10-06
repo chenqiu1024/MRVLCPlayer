@@ -1,237 +1,298 @@
 //
 //  OpenGLHelper.c
-//  GLRecFramework
+//  Madv360
 //
-//  Created by FutureBoy on 9/29/15.
-//  Copyright © 2015 CyberChall. All rights reserved.
+//  Created by FutureBoy on 11/5/15.
+//  Copyright © 2015 Cyllenge. All rights reserved.
 //
 
 #include "OpenGLHelper.h"
-#include <Foundation/Foundation.h>
-#include <OpenGLES/ES2/gl.h>
+//#include "AutoRef.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <math.h>
+//#include "vec3.h"
 
-GLuint SizeOfGLType(GLenum type)
+unsigned long nextPOT(unsigned long x)
 {
-    switch (type)
-    {
-        case GL_BYTE:
-            return sizeof(GLbyte);
-        case GL_UNSIGNED_BYTE:
-            return sizeof(GLubyte);
-        case GL_SHORT:
-            return sizeof(GLshort);
-        case GL_UNSIGNED_SHORT:
-            return sizeof(GLushort);
-        case GL_FLOAT:
-            return sizeof(GLfloat);
-        case GL_FIXED:
-            return sizeof(GLfixed);
-        case GL_INT:
-            return sizeof(GLint);
-        case GL_UNSIGNED_INT:
-            return sizeof(GLuint);
-        case GL_BOOL:
-            return sizeof(GLboolean);
-        default:
-            return sizeof(GLint);
-    }
+    x = x - 1;
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >>16);
+    return x + 1;
 }
 
-GLuint NumComponentsOfPixelFormat(GLenum format)
-{
-    int nComponents = 1;
-    switch (format)
+int ComponentsOfColorSpace(GLenum colorspace) {
+    switch (colorspace)
     {
         case GL_RGB:
-            //case GL_BGR:
-            //case GL_BGR_EXT:
-            nComponents = 3;
-            break;
+            return 3;
         case GL_RGBA:
-            //case GL_BGRA:
-            //case GL_BGRA_EXT:
-            nComponents = 4;
-            break;
+            return 4;
+        case GL_DEPTH_COMPONENT:
         case GL_ALPHA:
         case GL_LUMINANCE:
-            //case GL_STENCIL_INDEX:
-            //case GL_DEPTH_COMPONENT:
-            //case GL_RED:
-            //case GL_GREEN:
-            //case GL_BLUE:
-            nComponents = 1;
-            break;
+            return 1;
         case GL_LUMINANCE_ALPHA:
-            nComponents = 2;
-            break;
+            return 2;
+        default:
+            return 4;
     }
-    return nComponents;
 }
 
-void GetByteWidthOfPixelFormat(int& numBytes, int& denBytes, GLenum type)
-{
-    numBytes = 1, denBytes = 1;
-    switch (type)
+int BytesOfBitFormat(GLenum bitformat) {
+    switch (bitformat)
     {
         case GL_UNSIGNED_BYTE:
-        case GL_BYTE:
-            numBytes = 1;
-            break;
-        case GL_UNSIGNED_SHORT_4_4_4_4:
-        case GL_UNSIGNED_SHORT_5_5_5_1:
-            denBytes = 2;
-            break;
-        case GL_UNSIGNED_SHORT_5_6_5:
-            numBytes = 2;
-            denBytes = 3;
-            break;
-            /*
-             case GL_BITMAP:
-             numBytes = 1;
-             denBytes = 8;
-             break;*/
-        case GL_UNSIGNED_SHORT:
-        case GL_SHORT:
-            numBytes = 2;
-            break;
-            /*case GL_UNSIGNED_INT:
-             case GL_INT:
-             numBytes = 4;
-             break;*/
+            return 1;
         case GL_FLOAT:
-            numBytes = 4;
-            break;
-        case GL_FIXED:
-            numBytes = 4;///???
-            break;
+        case GL_SHORT:
+        case GL_UNSIGNED_SHORT:
+        case GL_UNSIGNED_SHORT_4_4_4_4:
+        case GL_UNSIGNED_SHORT_5_6_5:
+        case GL_UNSIGNED_SHORT_5_5_5_1:
+        case GL_UNSIGNED_SHORT_8_8_APPLE:
+        case GL_UNSIGNED_SHORT_8_8_REV_APPLE:
+            return 2;
+        default:
+            return 0;
     }
 }
 
-GLint GetBufferBinding(GLenum target)
-{
-    GLint bufferBinding;
-    switch (target)
+kmMat3* transformMatrix3InNormalizedCoordSystem2D(kmMat3* mat, Vec2f viewportOrigin, Vec2f viewportSize, Vec2f boundOrigin, Vec2f boundSize, Orientation2D orientation) {
+    transformMatrixInNormalizedCoordSystem2D(mat->mat, 3, viewportOrigin, viewportSize, boundOrigin, boundSize, orientation);
+    return mat;
+}
+
+kmMat4* transformMatrix4InNormalizedCoordSystem2D(kmMat4* mat, Vec2f viewportOrigin, Vec2f viewportSize, Vec2f boundOrigin, Vec2f boundSize, Orientation2D orientation) {
+    transformMatrixInNormalizedCoordSystem2D(mat->mat, 4, viewportOrigin, viewportSize, boundOrigin, boundSize, orientation);
+    return mat;
+}
+
+float* transformMatrixInNormalizedCoordSystem2D(float* matrix, int rank, Vec2f viewportOrigin, Vec2f viewportSize, Vec2f boundOrigin, Vec2f boundSize, Orientation2D orientation) {
+    float kx = boundSize.width / viewportSize.width;
+    float cx = (2.f * (boundOrigin.x - viewportOrigin.x) + boundSize.width) / viewportSize.width - 1.f;
+    float ky = boundSize.height / viewportSize.height;
+    float cy = (2.f * (boundOrigin.y - viewportOrigin.y) + boundSize.height) / viewportSize.height - 1.f;
+    
+    for (int i=rank*rank-1; i>=0; --i) matrix[i] = 0.f;
+    for (int i=0; i<rank; ++i) matrix[i * rank + i] = 1.f;
+    
+    switch (orientation)
     {
-        case GL_ARRAY_BUFFER:
-            glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bufferBinding);
+        case OrientationNormal:
+            matrix[0] = kx;
+            matrix[rank+1] = ky;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
             break;
-        case GL_ELEMENT_ARRAY_BUFFER:
-            glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &bufferBinding);
+        case OrientationMirror:
+            matrix[0] = -kx;
+            matrix[rank+1] = ky;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
+            break;
+        case OrientationRotate180Degree:
+            matrix[0] = -kx;
+            matrix[1] = 0;
+            matrix[rank] = 0;
+            matrix[rank+1] = -ky;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
+            break;
+        case OrientationRotate180DegreeMirror:
+            matrix[0] = kx;
+            matrix[1] = 0;
+            matrix[rank] = 0;
+            matrix[rank+1] = -ky;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
+            break;
+        case OrientationRotateRight:
+            matrix[0] = 0;
+            matrix[1] = -ky;
+            matrix[rank] = kx;
+            matrix[rank+1] = 0;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
+            break;
+        case OrientationRotateRightMirror:
+            matrix[0] = 0;
+            matrix[1] = -ky;
+            matrix[rank] = -kx;
+            matrix[rank+1] = 0;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
+            break;
+        case OrientationRotateLeftMirror:
+            matrix[0] = 0;
+            matrix[1] = ky;
+            matrix[rank] = kx;
+            matrix[rank+1] = 0;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
+            break;
+        case OrientationRotateLeft:
+            matrix[0] = 0;
+            matrix[1] = ky;
+            matrix[rank] = -kx;
+            matrix[rank+1] = 0;
+            matrix[(rank-1) * rank] = cx;
+            matrix[(rank-1) * rank + 1] = cy;
             break;
         default:
-            bufferBinding = -1;
+            matrix[0] = kx;
+            matrix[(rank-1) * rank] = cx;
+            matrix[rank+1] = ky;
+            matrix[(rank-1) * rank + 1] = cy;
             break;
     }
-    return bufferBinding;
+    return matrix;
 }
 
-GLint GetBufferDataSize(GLenum target)
-{
-    GLint size;
-    glGetBufferParameteriv(target, GL_BUFFER_SIZE, &size);
-    return size;
-}
-
-GLuint compileShader(const char* shaderSource, GLenum shaderType)
-{
-    GLuint shaderHandle = glCreateShader(shaderType);
+GLint compileShader(const GLchar* const* shaderSources, int sourcesCount, GLenum type) {
+    GLint shader = glCreateShader(type);
+    glShaderSource(shader, sourcesCount, shaderSources, NULL);
+    glCompileShader(shader);
     
-    GLchar * source = (GLchar*)shaderSource;
-    
-    if (!source)
-    {
-        ///        CCLog("Error loading shader: %s", shaderFileName);
-        exit(1);
+    GLint compileSuccess;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileSuccess);
+    if (compileSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetShaderInfoLog(shader, sizeof(messages), 0, &messages[0]);
+        ALOGE("ShaderType=%d : %s\nSource(s):\n", type, messages);
+        for (int i=0; i<sourcesCount; ++i)
+        {
+            ALOGE("%s\n", shaderSources[i]);
+        }
+        ///!!!exit(1);
     }
     
-    //const char* shaderStringUTF8 = [shaderString UTF8String];
-    int shaderStringLength = (int) strlen(source);
-    glShaderSource(shaderHandle, 1, &source, &shaderStringLength);
-    
-    glCompileShader(shaderHandle);
-    
-    GLint logLength;
-    glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 0)
-    {
-        GLchar *log = (GLchar*)malloc(logLength);
-        glGetShaderInfoLog(shaderHandle, logLength, &logLength, log);
-        NSLog(@"Shader compiling log:\n%s", log);
-        free(log);
-    }
-    
-    return shaderHandle;
+    return shader;
 }
 
-GLint compileShaderProgram(GLint program, const char* vertexShaderSource, const char* fragmentShaderSource)
-{
-    GLuint vertexShader = compileShader(vertexShaderSource, GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
-    // 2
+GLint compileAndLinkShaderProgram(const GLchar* const* vertexSources, int vertexSourcesCount,
+                                  const GLchar* const* fragmentSources, int fragmentSourcesCount) {
+    return compileAndLinkShaderProgramWithShaderPointers(vertexSources, vertexSourcesCount, fragmentSources, fragmentSourcesCount, NULL,NULL);
+}
+
+GLint compileAndLinkShaderProgramWithShaderPointers(const GLchar* const* vertexSources, int vertexSourcesCount,
+                                                    const GLchar* const* fragmentSources, int fragmentSourcesCount,
+                                                    GLint* pVertexShader, GLint* pFragmentShader) {
+    GLint vertexShader, fragmentShader;
+    if (!pVertexShader)
+    {
+        pVertexShader = &vertexShader;
+    }
+    if (!pFragmentShader)
+    {
+        pFragmentShader = &fragmentShader;
+    }
+    *pVertexShader = vertexShader = compileShader(vertexSources, vertexSourcesCount, GL_VERTEX_SHADER);
+    *pFragmentShader = fragmentShader = compileShader(fragmentSources, fragmentSourcesCount, GL_FRAGMENT_SHADER);
+    
+    GLint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
-    
-    GLint logLength, status;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 0)
-    {
-        GLchar *log = (GLchar*)malloc(logLength);
-        glGetProgramInfoLog(program, logLength, &logLength, log);
-        NSLog(@"Program link log:\n%s", log);
-        free(log);
-    }
-    
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0)
-    {
-        NSLog(@"Failed to link program");
-    }
-    
-    glValidateProgram(program);
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
-    if (status == 0)
-    {
-        NSLog(@"Failed to validate program");
-    }
-    
-    return status;
-}
-
-GLint  linkShaderProgram(GLint program)
-{
     glLinkProgram(program);
     
-    GLint logLength, status;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 0)
-    {
-        GLchar *log = (GLchar*)malloc(logLength);
-        glGetProgramInfoLog(program, logLength, &logLength, log);
-        NSLog(@"Program link log:\n%s", log);
-        free(log);
+    GLint linkSuccess;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
+    if (linkSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetProgramInfoLog(program, sizeof(messages), 0, &messages[0]);
+        ALOGE("%s\n", messages);
+        ///!!!exit(1);
     }
     
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == 0)
-    {
-        NSLog(@"Failed to link program");
-    }
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
     
-    glValidateProgram(program);
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
-    if (status == 0)
-    {
-        NSLog(@"Failed to validate program");
-    }
-    
-    return status;
-}
-
-GLuint compileAndLinkShader(const char* vertexShaderSource, const char* fragmentShaderSource) {
-    GLuint program = glCreateProgram();
-    compileShaderProgram(program, vertexShaderSource, fragmentShaderSource);
-    linkShaderProgram(program);
     return program;
 }
+
+void createOrUpdateTexture(GLuint* pTextureID, GLint width, GLint height, GLubyte** pTextureData, GLsizei* pTextureDataSize, void(*dataSetter)(GLubyte* data, GLint pow2Width, GLint pow2Height, void* userData), void* userData)
+{
+    GLsizei pow2Width = (GLsizei) width;///nextPOT(width);
+    GLsizei pow2Height = (GLsizei) height;///nextPOT(height);
+    
+    GLubyte* textureData = NULL;
+    if (NULL == pTextureData)
+    {
+        pTextureData = &textureData;
+    }
+    GLsizei textureDataSize = 0;
+    if (NULL == pTextureDataSize)
+    {
+        pTextureDataSize = &textureDataSize;
+    }
+    
+    if (0 == *pTextureID)
+    {
+        glGenTextures(1, pTextureID);
+        glBindTexture(GL_TEXTURE_2D, *pTextureID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//GL_LINEAR//GL_NEAREST
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//GL_LINEAR//GL_NEAREST//GL_LINEAR_MIPMAP_LINEAR
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//GL_CLAMP_TO_EDGE);//GL_REPEAT
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//GL_CLAMP_TO_EDGE);//GL_REPEAT
+        
+        if (NULL == *pTextureData)
+        {
+            *pTextureDataSize = pow2Width * pow2Height * 4;
+            *pTextureData = (GLubyte*) malloc(*pTextureDataSize);
+        }
+        else if (*pTextureDataSize < pow2Height*pow2Width*4)
+        {
+            free(*pTextureData);
+            *pTextureDataSize = pow2Width * pow2Height * 4;
+            *pTextureData = (GLubyte*) malloc(*pTextureDataSize);
+        }
+        
+        if (dataSetter)
+        {
+            dataSetter(*pTextureData, pow2Width, pow2Height, userData);
+        }
+        
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)pow2Width, (GLsizei)pow2Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, *pTextureData);
+    }
+    else
+    {
+        glBindTexture(GL_TEXTURE_2D, *pTextureID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//GL_LINEAR//GL_NEAREST
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//GL_LINEAR//GL_NEAREST//GL_LINEAR_MIPMAP_LINEAR
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//GL_CLAMP_TO_EDGE);//GL_REPEAT
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//GL_CLAMP_TO_EDGE);//GL_REPEAT
+        
+        if (NULL == *pTextureData)
+        {
+            *pTextureDataSize = pow2Width * pow2Height * 4;
+            *pTextureData = (GLubyte*) malloc(*pTextureDataSize);
+        }
+        else if (*pTextureDataSize < pow2Height*pow2Width*4)
+        {
+            free(*pTextureData);
+            *pTextureDataSize = pow2Width * pow2Height * 4;
+            *pTextureData = (GLubyte*) malloc(*pTextureDataSize);
+        }
+        
+        if (dataSetter)
+        {
+            dataSetter(*pTextureData, pow2Width, pow2Height, userData);
+        }
+        
+        //        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (GLsizei)pow2Width, (GLsizei)pow2Height, GL_RGBA, GL_UNSIGNED_BYTE, *pTextureData);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)pow2Width, (GLsizei)pow2Height, 0, GL_RGBA,GL_UNSIGNED_BYTE, *pTextureData);
+    }
+    //    glGenerateMipmap(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+P4C4T2f P4C4T2fMake(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLfloat s, GLfloat t) {
+    P4C4T2f ret = {x,y,z,w, r,g,b,a, s,t};
+    return ret;
+}
+

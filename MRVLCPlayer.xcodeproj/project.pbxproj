@@ -56,6 +56,21 @@
 		52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C11D1F87F2060078AFB7 /* CycordAudioRecorder.mm */; };
 		52B2C1261F87F2070078AFB7 /* CycordVideoRecorder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C11F1F87F2060078AFB7 /* CycordVideoRecorder.mm */; };
 		52B2C1271F87F2070078AFB7 /* OpenGLHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1221F87F2060078AFB7 /* OpenGLHelper.mm */; };
+		52B2C1511F87FC090078AFB7 /* aabb.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1411F87FC090078AFB7 /* aabb.c */; };
+		52B2C1521F87FC090078AFB7 /* ChangeLog in Resources */ = {isa = PBXBuildFile; fileRef = 52B2C1421F87FC090078AFB7 /* ChangeLog */; };
+		52B2C1531F87FC090078AFB7 /* CMakeLists.txt in Resources */ = {isa = PBXBuildFile; fileRef = 52B2C1431F87FC090078AFB7 /* CMakeLists.txt */; };
+		52B2C1541F87FC090078AFB7 /* mat4stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1451F87FC090078AFB7 /* mat4stack.c */; };
+		52B2C1551F87FC090078AFB7 /* matrix.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1461F87FC090078AFB7 /* matrix.c */; };
+		52B2C1561F87FC090078AFB7 /* mat3.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1471F87FC090078AFB7 /* mat3.c */; };
+		52B2C1571F87FC090078AFB7 /* mat4.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1481F87FC090078AFB7 /* mat4.c */; };
+		52B2C1581F87FC090078AFB7 /* neon_matrix_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1491F87FC090078AFB7 /* neon_matrix_impl.c */; };
+		52B2C1591F87FC090078AFB7 /* plane.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14A1F87FC090078AFB7 /* plane.c */; };
+		52B2C15A1F87FC090078AFB7 /* quaternion.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14B1F87FC090078AFB7 /* quaternion.c */; };
+		52B2C15B1F87FC090078AFB7 /* ray2.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14C1F87FC090078AFB7 /* ray2.c */; };
+		52B2C15C1F87FC090078AFB7 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14D1F87FC090078AFB7 /* utility.c */; };
+		52B2C15D1F87FC090078AFB7 /* vec2.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14E1F87FC090078AFB7 /* vec2.c */; };
+		52B2C15E1F87FC090078AFB7 /* vec3.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14F1F87FC090078AFB7 /* vec3.c */; };
+		52B2C15F1F87FC090078AFB7 /* vec4.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1501F87FC090078AFB7 /* vec4.c */; };
 		52CAA9CD1F66CE6500351014 /* MobileVLCKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -125,6 +140,40 @@
 		52B2C1221F87F2060078AFB7 /* OpenGLHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenGLHelper.mm; sourceTree = "<group>"; };
 		52B2C1231F87F2060078AFB7 /* postex_vert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = postex_vert.h; sourceTree = "<group>"; };
 		52B2C1241F87F2060078AFB7 /* tex_frag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tex_frag.h; sourceTree = "<group>"; };
+		52B2C1291F87FB8A0078AFB7 /* gles2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gles2.h; sourceTree = "<group>"; };
+		52B2C12A1F87FB8B0078AFB7 /* gles3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gles3.h; sourceTree = "<group>"; };
+		52B2C12B1F87FB8B0078AFB7 /* gles2ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gles2ext.h; sourceTree = "<group>"; };
+		52B2C12C1F87FB8B0078AFB7 /* gles3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gles3ext.h; sourceTree = "<group>"; };
+		52B2C12D1F87FBB80078AFB7 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
+		52B2C1311F87FC090078AFB7 /* aabb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aabb.h; sourceTree = "<group>"; };
+		52B2C1331F87FC090078AFB7 /* mat4stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat4stack.h; sourceTree = "<group>"; };
+		52B2C1341F87FC090078AFB7 /* matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix.h; sourceTree = "<group>"; };
+		52B2C1351F87FC090078AFB7 /* kazmath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kazmath.h; sourceTree = "<group>"; };
+		52B2C1361F87FC090078AFB7 /* mat3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat3.h; sourceTree = "<group>"; };
+		52B2C1371F87FC090078AFB7 /* mat4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat4.h; sourceTree = "<group>"; };
+		52B2C1381F87FC090078AFB7 /* neon_matrix_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = neon_matrix_impl.h; sourceTree = "<group>"; };
+		52B2C1391F87FC090078AFB7 /* plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plane.h; sourceTree = "<group>"; };
+		52B2C13A1F87FC090078AFB7 /* quaternion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quaternion.h; sourceTree = "<group>"; };
+		52B2C13B1F87FC090078AFB7 /* ray2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ray2.h; sourceTree = "<group>"; };
+		52B2C13C1F87FC090078AFB7 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
+		52B2C13D1F87FC090078AFB7 /* vec2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec2.h; sourceTree = "<group>"; };
+		52B2C13E1F87FC090078AFB7 /* vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3.h; sourceTree = "<group>"; };
+		52B2C13F1F87FC090078AFB7 /* vec4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec4.h; sourceTree = "<group>"; };
+		52B2C1411F87FC090078AFB7 /* aabb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aabb.c; sourceTree = "<group>"; };
+		52B2C1421F87FC090078AFB7 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
+		52B2C1431F87FC090078AFB7 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		52B2C1451F87FC090078AFB7 /* mat4stack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mat4stack.c; sourceTree = "<group>"; };
+		52B2C1461F87FC090078AFB7 /* matrix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = matrix.c; sourceTree = "<group>"; };
+		52B2C1471F87FC090078AFB7 /* mat3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mat3.c; sourceTree = "<group>"; };
+		52B2C1481F87FC090078AFB7 /* mat4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mat4.c; sourceTree = "<group>"; };
+		52B2C1491F87FC090078AFB7 /* neon_matrix_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = neon_matrix_impl.c; sourceTree = "<group>"; };
+		52B2C14A1F87FC090078AFB7 /* plane.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = plane.c; sourceTree = "<group>"; };
+		52B2C14B1F87FC090078AFB7 /* quaternion.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = quaternion.c; sourceTree = "<group>"; };
+		52B2C14C1F87FC090078AFB7 /* ray2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ray2.c; sourceTree = "<group>"; };
+		52B2C14D1F87FC090078AFB7 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = utility.c; sourceTree = "<group>"; };
+		52B2C14E1F87FC090078AFB7 /* vec2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec2.c; sourceTree = "<group>"; };
+		52B2C14F1F87FC090078AFB7 /* vec3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec3.c; sourceTree = "<group>"; };
+		52B2C1501F87FC090078AFB7 /* vec4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec4.c; sourceTree = "<group>"; };
 		52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileVLCKit.framework; path = "../MobileVLCKit-binary/MobileVLCKit.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -267,6 +316,12 @@
 		52B2C11B1F87F2060078AFB7 /* CycordKit */ = {
 			isa = PBXGroup;
 			children = (
+				52B2C12E1F87FC090078AFB7 /* kazmath */,
+				52B2C12D1F87FBB80078AFB7 /* Log.h */,
+				52B2C1291F87FB8A0078AFB7 /* gles2.h */,
+				52B2C12B1F87FB8B0078AFB7 /* gles2ext.h */,
+				52B2C12A1F87FB8B0078AFB7 /* gles3.h */,
+				52B2C12C1F87FB8B0078AFB7 /* gles3ext.h */,
 				52B2C11C1F87F2060078AFB7 /* CycordAudioRecorder.h */,
 				52B2C11D1F87F2060078AFB7 /* CycordAudioRecorder.mm */,
 				52B2C11E1F87F2060078AFB7 /* CycordVideoRecorder.h */,
@@ -278,6 +333,82 @@
 				52B2C1241F87F2060078AFB7 /* tex_frag.h */,
 			);
 			path = CycordKit;
+			sourceTree = "<group>";
+		};
+		52B2C12E1F87FC090078AFB7 /* kazmath */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C12F1F87FC090078AFB7 /* include */,
+				52B2C1401F87FC090078AFB7 /* src */,
+			);
+			path = kazmath;
+			sourceTree = "<group>";
+		};
+		52B2C12F1F87FC090078AFB7 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C1301F87FC090078AFB7 /* kazmath */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		52B2C1301F87FC090078AFB7 /* kazmath */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C1311F87FC090078AFB7 /* aabb.h */,
+				52B2C1321F87FC090078AFB7 /* GL */,
+				52B2C1351F87FC090078AFB7 /* kazmath.h */,
+				52B2C1361F87FC090078AFB7 /* mat3.h */,
+				52B2C1371F87FC090078AFB7 /* mat4.h */,
+				52B2C1381F87FC090078AFB7 /* neon_matrix_impl.h */,
+				52B2C1391F87FC090078AFB7 /* plane.h */,
+				52B2C13A1F87FC090078AFB7 /* quaternion.h */,
+				52B2C13B1F87FC090078AFB7 /* ray2.h */,
+				52B2C13C1F87FC090078AFB7 /* utility.h */,
+				52B2C13D1F87FC090078AFB7 /* vec2.h */,
+				52B2C13E1F87FC090078AFB7 /* vec3.h */,
+				52B2C13F1F87FC090078AFB7 /* vec4.h */,
+			);
+			path = kazmath;
+			sourceTree = "<group>";
+		};
+		52B2C1321F87FC090078AFB7 /* GL */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C1331F87FC090078AFB7 /* mat4stack.h */,
+				52B2C1341F87FC090078AFB7 /* matrix.h */,
+			);
+			path = GL;
+			sourceTree = "<group>";
+		};
+		52B2C1401F87FC090078AFB7 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C1411F87FC090078AFB7 /* aabb.c */,
+				52B2C1421F87FC090078AFB7 /* ChangeLog */,
+				52B2C1431F87FC090078AFB7 /* CMakeLists.txt */,
+				52B2C1441F87FC090078AFB7 /* GL */,
+				52B2C1471F87FC090078AFB7 /* mat3.c */,
+				52B2C1481F87FC090078AFB7 /* mat4.c */,
+				52B2C1491F87FC090078AFB7 /* neon_matrix_impl.c */,
+				52B2C14A1F87FC090078AFB7 /* plane.c */,
+				52B2C14B1F87FC090078AFB7 /* quaternion.c */,
+				52B2C14C1F87FC090078AFB7 /* ray2.c */,
+				52B2C14D1F87FC090078AFB7 /* utility.c */,
+				52B2C14E1F87FC090078AFB7 /* vec2.c */,
+				52B2C14F1F87FC090078AFB7 /* vec3.c */,
+				52B2C1501F87FC090078AFB7 /* vec4.c */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		52B2C1441F87FC090078AFB7 /* GL */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C1451F87FC090078AFB7 /* mat4stack.c */,
+				52B2C1461F87FC090078AFB7 /* matrix.c */,
+			);
+			path = GL;
 			sourceTree = "<group>";
 		};
 		52CAA9CB1F66CE6500351014 /* Frameworks */ = {
@@ -347,10 +478,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				42B02DBD1C8E70D9002ACACC /* Full Screen Icon@3x.png in Resources */,
+				52B2C1531F87FC090078AFB7 /* CMakeLists.txt in Resources */,
 				42B02DC51C8E70D9002ACACC /* Play Icon@2x.png in Resources */,
 				42E8F5961C8E7F6600A3A595 /* Sound Icon@3x.png in Resources */,
 				42E8F58C1C8E76B800A3A595 /* Player Control Nob.png in Resources */,
 				42B02DBB1C8E70D9002ACACC /* Full Screen Icon.png in Resources */,
+				52B2C1521F87FC090078AFB7 /* ChangeLog in Resources */,
 				18D628AA1C7DC3B800DDA9E7 /* LaunchScreen.storyboard in Resources */,
 				42B02DCC1C8E70D9002ACACC /* Video Bg@3x.png in Resources */,
 				18D628A71C7DC3B800DDA9E7 /* Assets.xcassets in Resources */,
@@ -383,16 +516,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52B2C1541F87FC090078AFB7 /* mat4stack.c in Sources */,
+				52B2C15B1F87FC090078AFB7 /* ray2.c in Sources */,
+				52B2C1511F87FC090078AFB7 /* aabb.c in Sources */,
+				52B2C1591F87FC090078AFB7 /* plane.c in Sources */,
+				52B2C1561F87FC090078AFB7 /* mat3.c in Sources */,
 				184C687F1C8AC35E006DF9E3 /* MRVLCPlayer.mm in Sources */,
+				52B2C15E1F87FC090078AFB7 /* vec3.c in Sources */,
+				52B2C15A1F87FC090078AFB7 /* quaternion.c in Sources */,
+				52B2C15D1F87FC090078AFB7 /* vec2.c in Sources */,
 				4248F6131C9E8E0E00835E8E /* RemoteViewController.m in Sources */,
+				52B2C1571F87FC090078AFB7 /* mat4.c in Sources */,
+				52B2C15F1F87FC090078AFB7 /* vec4.c in Sources */,
 				52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */,
+				52B2C15C1F87FC090078AFB7 /* utility.c in Sources */,
 				42B02DCF1C8E70FF002ACACC /* MRVideoControlView.m in Sources */,
+				52B2C1581F87FC090078AFB7 /* neon_matrix_impl.c in Sources */,
 				184C687B1C89A0FE006DF9E3 /* MRVideoHUDView.m in Sources */,
 				18D6289F1C7DC3B800DDA9E7 /* AppDelegate.m in Sources */,
 				4248F6101C9E8DFC00835E8E /* LocalViewConrtoller.m in Sources */,
 				18D6289C1C7DC3B800DDA9E7 /* main.m in Sources */,
 				52B2C1271F87F2070078AFB7 /* OpenGLHelper.mm in Sources */,
 				52B2C1261F87F2070078AFB7 /* CycordVideoRecorder.mm in Sources */,
+				52B2C1551F87FC090078AFB7 /* matrix.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

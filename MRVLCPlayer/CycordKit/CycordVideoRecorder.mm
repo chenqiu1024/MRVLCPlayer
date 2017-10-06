@@ -499,7 +499,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         const char* fragmentShaderSource =
 #include "tex_frag.h"
         ;
-        _renderProgram = compileAndLinkShader(vertexShaderSource, fragmentShaderSource);
+        _renderProgram = compileAndLinkShaderProgram(&vertexShaderSource,1, &fragmentShaderSource,1);
         _uniTexture = glGetUniformLocation(_renderProgram, "u_texture0");
         _atrPosition = glGetAttribLocation(_renderProgram, "a_position");
         _atrTextureCoord = glGetAttribLocation(_renderProgram, "a_texCoord");
@@ -767,7 +767,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         
         _isViewSizeInvalid = NO;
     }
-    CHECK_GL_ERROR_DEBUG();
+    CHECK_GL_ERROR();
     
     int numFrames = (int)(videoTimeSeconds * _fps / 1000.0f);
     //            NSLog(@"One new frame to record. numFrames = %d, elapsedTime = %d", numFrames, elapsedTime);
@@ -843,7 +843,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
 {
     BOOL ret;
     [self createOffscreenGLVariables];
-    CHECK_GL_ERROR_DEBUG();
+    CHECK_GL_ERROR();
     
     if (-1 == _renderingingStartTime)
     {
@@ -873,16 +873,16 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     if (GL_TEXTURE == attachedObjectType)
     {
         glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebuffer);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         // Get previous OpenGL states:
         GLint activeTexture;
         glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTexture);
         glActiveTexture(GL_TEXTURE0);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         GLint bindingTexture;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &bindingTexture);
         glBindTexture(GL_TEXTURE_2D, attachedObjectID);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         
         bool gles1 = ([EAGLContext currentContext].API == kEAGLRenderingAPIOpenGLES1);
         
@@ -899,18 +899,18 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
                 glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, isVAAEnabled+i);
                 glDisableVertexAttribArray(i);
             }
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             GLint prevElementArrayBuffer, prevArrayBuffer;
             glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prevElementArrayBuffer);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &prevArrayBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             GLint vertexArrayBinding;
             glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &vertexArrayBinding);
             glBindVertexArrayOES(_vertexArray);
             // :Get previous OpenGL states
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             glUseProgram(_renderProgram);
             glEnableVertexAttribArray(_atrTextureCoord);
             glEnableVertexAttribArray(_atrPosition);
@@ -918,7 +918,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             glBindBuffer(GL_ARRAY_BUFFER, _arrayBuffer);
             glVertexAttribPointer(_atrPosition, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, 0);
             glVertexAttribPointer(_atrTextureCoord, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, (GLvoid*)(sizeof(GLfloat)*2));
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             
             glEnable(GL_BLEND);
             glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -997,11 +997,11 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             glMatrixMode(GL_MODELVIEW);
             glPopMatrix();
         }
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         
         glBindTexture(GL_TEXTURE_2D, bindingTexture);
         glActiveTexture(activeTexture);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         ret = gSuperPresentRenderBuffer(receiver, cmd, target);
     }
     else
@@ -1082,35 +1082,35 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         if (GL_TEXTURE != attachedObjectType || renderTextureID != attachedObjectID)
         {
             glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, renderTextureID, 0);
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebuffer);
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
             glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, defaultRenderbuffer);
-            CHECK_GL_ERROR_DEBUG();
+            CHECK_GL_ERROR();
         }
     }
     else if (GL_TEXTURE == attachedObjectType)
     {
         glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, defaultRenderbuffer);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         glBindFramebufferOES(GL_FRAMEBUFFER_OES, _framebuffer);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
         glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, renderTextureID, 0);
-        CHECK_GL_ERROR_DEBUG();
+        CHECK_GL_ERROR();
     }
     ///!!!For Debug:
     GLint renderbufferWidth, renderbufferHeight;
     glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &renderbufferWidth);
     glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &renderbufferHeight);
-    CHECK_GL_ERROR_DEBUG();
+    CHECK_GL_ERROR();
     //    APPLY_LOGBIT(LOG_RESIZE_GLVIEW) {NSLog(@"CycordVideoRecorder: renderbuffer.(width, height) = (%d, %d)", renderbufferWidth, renderbufferHeight);}
     
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
-    CHECK_GL_ERROR_DEBUG();
+    CHECK_GL_ERROR();
     return ret;
 }
 
