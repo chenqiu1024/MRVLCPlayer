@@ -7,6 +7,7 @@
 //
 
 #import "MRVideoControlView.h"
+#import "CycordVideoRecorder.h"
 
 @interface MRVideoControlView ()
 @property (nonatomic, strong) UIPanGestureRecognizer *pan;

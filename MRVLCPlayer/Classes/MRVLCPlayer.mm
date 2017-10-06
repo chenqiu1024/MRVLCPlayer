@@ -10,6 +10,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <AVFoundation/AVFoundation.h>
 #import "MRVideoConst.h"
+#import "CycordVideoRecorder.h"
 
 static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
 
@@ -204,6 +205,9 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
 
 #pragma mark Player Logic
 - (void)play {
+    [CycordVideoRecorder initVideoRecorder];
+    [CycordVideoRecorder startRecording];
+    
     [self.player play];
     self.controlView.playButton.hidden = YES;
     self.controlView.pauseButton.hidden = NO;
@@ -222,6 +226,8 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
     self.controlView.progressSlider.value = 1;
     self.controlView.playButton.hidden = NO;
     self.controlView.pauseButton.hidden = YES;
+    
+    [CycordVideoRecorder stopRecording];
 }
 
 #pragma mark - Delegate

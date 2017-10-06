@@ -53,6 +53,9 @@
 		42E8F5941C8E7F6600A3A595 /* Sound Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5911C8E7F6600A3A595 /* Sound Icon.png */; };
 		42E8F5951C8E7F6600A3A595 /* Sound Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5921C8E7F6600A3A595 /* Sound Icon@2x.png */; };
 		42E8F5961C8E7F6600A3A595 /* Sound Icon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5931C8E7F6600A3A595 /* Sound Icon@3x.png */; };
+		52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C11D1F87F2060078AFB7 /* CycordAudioRecorder.mm */; };
+		52B2C1261F87F2070078AFB7 /* CycordVideoRecorder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C11F1F87F2060078AFB7 /* CycordVideoRecorder.mm */; };
+		52B2C1271F87F2070078AFB7 /* OpenGLHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1221F87F2060078AFB7 /* OpenGLHelper.mm */; };
 		52CAA9CD1F66CE6500351014 /* MobileVLCKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -113,6 +116,15 @@
 		42E8F5911C8E7F6600A3A595 /* Sound Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon.png"; sourceTree = "<group>"; };
 		42E8F5921C8E7F6600A3A595 /* Sound Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon@2x.png"; sourceTree = "<group>"; };
 		42E8F5931C8E7F6600A3A595 /* Sound Icon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon@3x.png"; sourceTree = "<group>"; };
+		52B2C11C1F87F2060078AFB7 /* CycordAudioRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CycordAudioRecorder.h; sourceTree = "<group>"; };
+		52B2C11D1F87F2060078AFB7 /* CycordAudioRecorder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CycordAudioRecorder.mm; sourceTree = "<group>"; };
+		52B2C11E1F87F2060078AFB7 /* CycordVideoRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CycordVideoRecorder.h; sourceTree = "<group>"; };
+		52B2C11F1F87F2060078AFB7 /* CycordVideoRecorder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CycordVideoRecorder.mm; sourceTree = "<group>"; };
+		52B2C1201F87F2060078AFB7 /* CycordVideoRecorderDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CycordVideoRecorderDelegate.h; sourceTree = "<group>"; };
+		52B2C1211F87F2060078AFB7 /* OpenGLHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLHelper.h; sourceTree = "<group>"; };
+		52B2C1221F87F2060078AFB7 /* OpenGLHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenGLHelper.mm; sourceTree = "<group>"; };
+		52B2C1231F87F2060078AFB7 /* postex_vert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = postex_vert.h; sourceTree = "<group>"; };
+		52B2C1241F87F2060078AFB7 /* tex_frag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tex_frag.h; sourceTree = "<group>"; };
 		52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileVLCKit.framework; path = "../MobileVLCKit-binary/MobileVLCKit.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -204,6 +216,7 @@
 		18D628991C7DC3B800DDA9E7 /* MRVLCPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				52B2C11B1F87F2060078AFB7 /* CycordKit */,
 				4248F6161C9E962100835E8E /* Resource */,
 				184C68591C89A0FE006DF9E3 /* Asset */,
 				184C68661C89A0FE006DF9E3 /* Classes */,
@@ -249,6 +262,22 @@
 				4248F61B1C9E9E2300835E8E /* 02.mov */,
 			);
 			path = Resource;
+			sourceTree = "<group>";
+		};
+		52B2C11B1F87F2060078AFB7 /* CycordKit */ = {
+			isa = PBXGroup;
+			children = (
+				52B2C11C1F87F2060078AFB7 /* CycordAudioRecorder.h */,
+				52B2C11D1F87F2060078AFB7 /* CycordAudioRecorder.mm */,
+				52B2C11E1F87F2060078AFB7 /* CycordVideoRecorder.h */,
+				52B2C11F1F87F2060078AFB7 /* CycordVideoRecorder.mm */,
+				52B2C1201F87F2060078AFB7 /* CycordVideoRecorderDelegate.h */,
+				52B2C1211F87F2060078AFB7 /* OpenGLHelper.h */,
+				52B2C1221F87F2060078AFB7 /* OpenGLHelper.mm */,
+				52B2C1231F87F2060078AFB7 /* postex_vert.h */,
+				52B2C1241F87F2060078AFB7 /* tex_frag.h */,
+			);
+			path = CycordKit;
 			sourceTree = "<group>";
 		};
 		52CAA9CB1F66CE6500351014 /* Frameworks */ = {
@@ -356,11 +385,14 @@
 			files = (
 				184C687F1C8AC35E006DF9E3 /* MRVLCPlayer.mm in Sources */,
 				4248F6131C9E8E0E00835E8E /* RemoteViewController.m in Sources */,
+				52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */,
 				42B02DCF1C8E70FF002ACACC /* MRVideoControlView.m in Sources */,
 				184C687B1C89A0FE006DF9E3 /* MRVideoHUDView.m in Sources */,
 				18D6289F1C7DC3B800DDA9E7 /* AppDelegate.m in Sources */,
 				4248F6101C9E8DFC00835E8E /* LocalViewConrtoller.m in Sources */,
 				18D6289C1C7DC3B800DDA9E7 /* main.m in Sources */,
+				52B2C1271F87F2070078AFB7 /* OpenGLHelper.mm in Sources */,
+				52B2C1261F87F2070078AFB7 /* CycordVideoRecorder.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
