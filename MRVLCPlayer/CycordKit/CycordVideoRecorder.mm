@@ -920,8 +920,14 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             glVertexAttribPointer(_atrTextureCoord, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, (GLvoid*)(sizeof(GLfloat)*2));
             CHECK_GL_ERROR();
             
+            GLint prevBlendSrc, prevBlendDst;
+            glGetIntegerv(GL_BLEND_SRC, &prevBlendSrc);
+            glGetIntegerv(GL_BLEND_DST, &prevBlendDst);
+            
             glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunc(GL_ONE, GL_ONE);
+            glClearColor(0.f, 1.f, 1.f, 1.f);
+            glClear(GL_COLOR_BUFFER_BIT);
             glDrawElements(GL_TRIANGLES, sizeof(gIndices)/sizeof(gIndices[0]), GL_UNSIGNED_BYTE, gIndices);
             
             // Restore all GL states:
@@ -937,6 +943,10 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             }
             delete[] isVAAEnabled;
             glUseProgram(currentProgram);
+//            glBlendFunc(prevBlendSrc, prevBlendDst);
+//            glClearColor(0.f, 0.f, 0.f, 1.f);
+//            glClear(GL_COLOR_BUFFER_BIT);
+            glDisable(GL_BLEND);
         }
         else
         {
