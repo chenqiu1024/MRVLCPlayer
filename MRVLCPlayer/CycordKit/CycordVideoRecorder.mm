@@ -5,6 +5,7 @@
 //  Created by FutureBoy on 12/18/14.
 //  Copyright (c) 2014 RedShore. All rights reserved.
 //
+#ifdef TARGET_OS_IOS
 
 #include "CycordVideoRecorder.h"
 //#import "CycordNetworkManager.h"
@@ -18,7 +19,6 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 #import <MediaPlayer/MediaPlayer.h>
-#import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
@@ -27,12 +27,15 @@
 #import <OpenGLES/ES2/glext.h>
 #import <Metal/Metal.h>
 #import <sys/time.h>
+//#import "avUtils.h"
 //#import "mathext.h"
 
 #define OPENGL_PIXEL_FORMAT kCVPixelFormatType_32BGRA
 #define VIDEO_PIXEL_FORMAT kCVPixelFormatType_32BGRA
 
-CVPixelBufferRef createPixelBuffer(CGSize size);
+#ifdef DEBUG_VIDEORECORDER_INTERRUPTED_BY_ERROR
+static bool s_isFirstTime = true;
+#endif
 
 long getCurrentTimeMills()
 {
@@ -51,6 +54,7 @@ long getCurrentTimeMills()
     BOOL _takeSnapshotNextFrame;
     
     BOOL _isRecording;
+    BOOL _isShareMode;
     
     int _recordedFrames;
     long _recordingStartTime;
@@ -89,12 +93,17 @@ long getCurrentTimeMills()
     GLint _atrPosition;
     GLint _atrTextureCoord;
     
-    AVAudioRecorder * _audioRecorder;
+    //    AVAudioRecorder * _audioRecorder;
+    
+    NSString* _destVideoBaseName;
+    
+    long _lastWriteTimeStamp;
+    CMTime _lastWriteCMTime;
 }
 
 - (void) startRecordingPrivate : (float)fps;
 
-- (void) stopRecordingPrivate : (void(^)(void))handler;
+- (void) stopRecordingPrivate : (void(^)(NSError*, NSString*))handler;
 
 - (BOOL) onRenderbufferStorage : (id)receiver
                            cmd : (SEL)cmd
@@ -105,14 +114,16 @@ long getCurrentTimeMills()
                            cmd : (SEL)cmd
                         target : (NSInteger)target;
 
-- (void) onCommandBufferComplete : (id<CAMetalDrawable>)metalDrawable;
+//- (void) onCommandBufferComplete : (id<CAMetalDrawable>)metalDrawable;
 
 - (void) setupVideoWriter : (CGSize)size;
 
+//disable define property write by spy
+#if 0
 @property (retain, nonatomic) AVAssetWriter* videoWriter;
 @property (retain, nonatomic) AVAssetWriterInput* videoWriterInput;
 @property (retain, nonatomic) AVAssetWriterInputPixelBufferAdaptor* pixelBufferAdaptor;
-
+#endif
 @end
 
 static CycordVideoRecorder* gSharedInstance = nil;
@@ -160,7 +171,7 @@ BOOL FKC_PresentRenderbuffer(id self, SEL _cmd, NSUInteger target)
         return gSuperPresentRenderBuffer(self, _cmd, target);
 }
 
-static id<CAMetalDrawable> gCurrentMetalDrawable = nil;
+//static id<CAMetalDrawable> gCurrentMetalDrawable = nil;
 
 //void FKC_AddCompletedHandler(id self, SEL _cmd, MTLCommandBufferHandler handler) {
 //    if (g_isClassHooked)
@@ -170,43 +181,43 @@ static id<CAMetalDrawable> gCurrentMetalDrawable = nil;
 //}
 
 void FKC_PresentDrawable(id self, SEL _cmd, id<MTLDrawable> drawable) {
-    if (g_isClassHooked)
-    {
-        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
-        {
-            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
-            
-            id <MTLCommandBuffer> commandBuffer = self;
-            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
-                
-                gCurrentMetalDrawable = nil;
-            }];
-        }
-        gSuperPresentDrawable(self, _cmd, drawable);
-    }
-    else
-        gSuperPresentDrawable(self, _cmd, drawable);
+    //    if (g_isClassHooked)
+    //    {
+    //        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
+    //        {
+    //            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
+    //
+    //            id <MTLCommandBuffer> commandBuffer = self;
+    //            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+    //                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
+    //
+    //                gCurrentMetalDrawable = nil;
+    //            }];
+    //        }
+    //        gSuperPresentDrawable(self, _cmd, drawable);
+    //    }
+    //    else
+    //        gSuperPresentDrawable(self, _cmd, drawable);
 }
 
 void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTimeInterval time) {
-    if (g_isClassHooked)
-    {
-        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
-        {
-            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
-            
-            id <MTLCommandBuffer> commandBuffer = self;
-            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
-                
-                gCurrentMetalDrawable = nil;
-            }];
-        }
-        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
-    }
-    else
-        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
+    //    if (g_isClassHooked)
+    //    {
+    //        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
+    //        {
+    //            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
+    //
+    //            id <MTLCommandBuffer> commandBuffer = self;
+    //            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+    //                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
+    //
+    //                gCurrentMetalDrawable = nil;
+    //            }];
+    //        }
+    //        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
+    //    }
+    //    else
+    //        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
 }
 
 @implementation CycordVideoRecorder
@@ -215,10 +226,14 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
 
 @synthesize snapshotDatas = _snapshotDatas;
 
+//disable define property write by spy
+#if 0
 @synthesize videoWriter = _videoWriter;
 @synthesize videoWriterInput = _videoWriterInput;
 @synthesize pixelBufferAdaptor = _pixelBufferAdaptor;
+#endif
 @synthesize renderTexture = _renderTexture;
+@synthesize encodingError;
 
 - (void) dealloc
 {
@@ -226,14 +241,13 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [self stopRecordingPrivate:nil];
+    //    [self stopRecordingPrivate:nil];
     [self releaseOffscreenGLVariables];
+    NSLog(@"CycordVideoRecorder dealloc");
 }
 
-- (id) init
-{
-    self = [super init];
-    if (self)
+- (instancetype) initWithOutputVideoBaseName:(NSString*)outputVideoBaseName {
+    if (self = [super init])
     {
         _isRecording = NO;
         
@@ -246,11 +260,17 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         
         //        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onUploadSuccess:) name:@kNotificationUploadSuccess object:nil];
         //        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onUploadFailed:) name:@kNotificationUploadFailed object:nil];
-        
-        [self initOffscreenGLVariables];
-        [self releaseSizeDependentMembers];
+        _destVideoBaseName = [NSString stringWithString:outputVideoBaseName];
+        //[self refreshTmpName:outputVideoBaseName];
+        //_baseVidName = [NSString stringWithString:outputVideoBaseName];
+        _isShareMode = NO;
     }
     return self;
+}
+
+- (id) init
+{
+    return [self initWithOutputVideoBaseName:@"video.mov"];
 }
 
 - (void) onUploadSuccess : (NSNotification*)notification {
@@ -270,20 +290,17 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
 //    return UINT_MAX;
 //}
 
-+ (id) allocWithZone:(struct _NSZone *)zone {
-    @synchronized (self)
-    {
-        if (!gSharedInstance)
-        {
-            gSharedInstance = [super allocWithZone:nil];
-        }
-    }
-    return gSharedInstance;
-}
+//+ (id) allocWithZone:(struct _NSZone *)zone {
+//    if (!gSharedInstance)
+//    {
+//        gSharedInstance = [super allocWithZone:nil];
+//    }
+//    return gSharedInstance;
+//}
 
-+ (id) copyWithZone:(struct _NSZone *)zone {
-    return nil;
-}
+//+ (id) copyWithZone:(struct _NSZone *)zone {
+//    return nil;
+//}
 
 + (id) initVideoRecorder {
     @synchronized (self)
@@ -291,6 +308,8 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         if (nil == gSharedInstance)
         {
             gSharedInstance = [CycordVideoRecorder sharedInstance];
+            [gSharedInstance initOffscreenGLVariables];
+            [gSharedInstance releaseSizeDependentMembers];
             FKC_hookOCClasses();
         }
     }
@@ -303,6 +322,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         if (gSharedInstance)
         {
             [gSharedInstance releaseSizeDependentMembers];
+            [gSharedInstance releaseOffscreenGLVariables];
             gSharedInstance = nil;
             FKC_restoreOCClasses();
         }
@@ -311,13 +331,13 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
 
 + (CycordVideoRecorder*) sharedInstance
 {
-    @synchronized (self)
-    {
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
         if (nil == gSharedInstance)
         {
             gSharedInstance = [[CycordVideoRecorder alloc] init];
         }
-    }
+    });
     return gSharedInstance;
 }
 
@@ -331,13 +351,32 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     [[CycordVideoRecorder sharedInstance] startRecordingPrivate : fps];
 }
 
+- (void) startRecording
+{
+    [self startRecording:30.0f];
+}
+
+- (void) startRecording : (float)fps
+{
+    [self startRecordingPrivate : fps];
+}
+
 + (void) stopRecording
 {
     [[CycordVideoRecorder sharedInstance] stopRecordingPrivate:nil];
 }
 
-+ (void) stopRecordingWithCompletionHandler:(void (^)())handler {
++ (void) stopRecordingWithCompletionHandler:(void (^)(NSError*, NSString*))handler {
     [[CycordVideoRecorder sharedInstance] stopRecordingPrivate:handler];
+}
+
+- (void) stopRecording
+{
+    [self stopRecordingPrivate:nil];
+}
+
+- (void) stopRecordingWithCompletionHandler:(void (^)(NSError*, NSString*))handler {
+    [self stopRecordingPrivate:handler];
 }
 
 + (void) startReplaying:(UIViewController*)parentVC
@@ -368,11 +407,11 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     _recordingStartTime = -1;
     _fps = (fps <= 0 ? 30.0f : fps);
     
-///!!!    [self prepareToRecordAudio];
-//    [_audioRecorder record];
+    //    [self prepareToRecordAudio];
+    //    [_audioRecorder record];
 }
 
-- (void) stopRecordingPrivate:(void(^)(void))handler
+- (void) stopRecordingPrivate:(void(^)(NSError*, NSString*))handler
 {
     @synchronized(self)
     {
@@ -380,33 +419,25 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         _isRecording = NO;
     }
     
-    [_audioRecorder stop];
-    _audioRecorder = nil;
+    //    [_audioRecorder stop];
+    //    _audioRecorder = nil;
     
-    //Finish the session:
-    [_videoWriterInput markAsFinished];
+    //    __weak __typeof(self) wSelf = self;
+    
+    //write by spy when stop writer call
+    [_videoWriter endSessionAtSourceTime:_lastWriteCMTime];
     [_videoWriter finishWritingWithCompletionHandler:^() {
         //        //        NSError* error = nil;///!!!For Debug
         //        //        [[NSFileManager defaultManager] removeItemAtURL:_videoWriter.outputURL error:&error];
         //
-        //        self.videoWriter = nil;
-        //        self.videoWriterInput = nil;
-        //
-        //        self.pixelBufferAdaptor = nil;
-        //
-        //        CVPixelBufferRelease(_pixelBuffer);
-        //        _pixelBuffer = NULL;
+        
         //
         //        CVOpenGLESTextureCacheFlush(_textureCache, 0);
         //        _textureCache = NULL;
         //
-        [self compileAudioAndVideoToMovie];
+        //NSLog(@"VideoEncoding: _videoWriter.status = %d, .error = %@", (int)_videoWriter.status, _videoWriter.error);
+        [self compileAudioAndVideoToMovie:handler];
         [self releaseSizeDependentMembers];
-        
-        if (handler)
-        {
-            handler();
-        }
     }];
 }
 
@@ -414,33 +445,53 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     //        NSError* error = nil;///!!!For Debug
     //        [[NSFileManager defaultManager] removeItemAtURL:_videoWriter.outputURL error:&error];
     
-    self.videoWriter = nil;
-    self.videoWriterInput = nil;
+    _videoWriter = nil;
+    _videoWriterInput = nil;
+    _pixelBufferAdaptor = nil;
     
-    self.pixelBufferAdaptor = nil;
-    
-    CVPixelBufferRelease(_pixelBuffer);
+    NSLog(@"pixelBuffer release before");
+    if (_pixelBuffer)
+        CVPixelBufferRelease(_pixelBuffer);
+    NSLog(@"pixelBuffer release after");
     _pixelBuffer = NULL;
     
-    CVOpenGLESTextureCacheFlush(_textureCache, 0);
+    if (_textureCache){
+        CVOpenGLESTextureCacheFlush(_textureCache, 0);
+        CFRelease(_textureCache);
+    }
     _textureCache = NULL;
+    
+    if (_renderTexture)
+        CFRelease(_renderTexture);
+    _renderTexture = NULL;
     
     if (_pixelData) free(_pixelData);
     _pixelData = NULL;
+    
+    _lastWriteTimeStamp = -1;
+    
+    NSLog(@"releaseSizeDependentMembers");
 }
 
 - (void) createSizeDependentMembers : (CGSize)size {
     [self setupVideoWriter : size];
     
     // Set up our background texture and foreground framebuffer:
+    NSLog(@"freePixelBuffer before");
     CVPixelBufferRelease(_pixelBuffer);
-    _pixelBuffer = createPixelBuffer(size);///!!! For Retina???
+    NSLog(@"freePixelBuffer after");
+    
+    NSLog(@"createPixelBuffer before");
+    _pixelBuffer = [self createPixelBuffer:size];///!!! For Retina???
+    NSLog(@"createPixelBuffer after");
+    
     //    APPLY_LOGBIT(LOG_RESIZE_GLVIEW) {NSLog(@"CycordVideoRecorder$createSizeDependentMembers: size = (%d,%d)", (int)size.width, (int)size.height);}
     
     CVReturn err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, NULL, [EAGLContext currentContext], NULL, &_textureCache );
     
     // create a texture from our renderTarget
     // textureCache will be what you previously made with CVOpenGLESTextureCacheCreate
+    NSLog(@"fillPixelBuffer before");
     err = CVOpenGLESTextureCacheCreateTextureFromImage(
                                                        kCFAllocatorDefault,
                                                        _textureCache,
@@ -454,6 +505,8 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
                                                        GL_UNSIGNED_BYTE,
                                                        0,
                                                        &_renderTexture);
+    NSLog(@"fillPixelBuffer after");
+    
     // check err value
     
     // set the texture up like any other texture
@@ -463,8 +516,8 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     glBindTexture(CVOpenGLESTextureGetTarget(_renderTexture),
                   CVOpenGLESTextureGetName(_renderTexture));
     //*
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     /*/
      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -475,6 +528,8 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     
     if (NULL != _pixelData) free(_pixelData);
     _pixelData = (GLubyte*)malloc(size.width * size.height * 8);
+    
+    NSLog(@"createSizeDependentMembers");
 }
 
 - (void) initOffscreenGLVariables {
@@ -499,7 +554,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         const char* fragmentShaderSource =
 #include "tex_frag.h"
         ;
-        _renderProgram = compileAndLinkShaderProgram(&vertexShaderSource,1, &fragmentShaderSource,1);
+        _renderProgram = compileAndLinkShaderProgram(&vertexShaderSource, 1, &fragmentShaderSource, 1);
         _uniTexture = glGetUniformLocation(_renderProgram, "u_texture0");
         _atrPosition = glGetAttribLocation(_renderProgram, "a_position");
         _atrTextureCoord = glGetAttribLocation(_renderProgram, "a_texCoord");
@@ -622,10 +677,22 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
 }
 
 - (void) takeSnapshotData {
+    NSLog(@"lock pixelBuffer before");
     CVPixelBufferLockBaseAddress(_pixelBuffer, 0);
+    NSLog(@"take pixelBuffer snapshot before");
     GLubyte* pixelBytes = (GLubyte*) CVPixelBufferGetBaseAddress(_pixelBuffer);
     memcpy(_pixelData, pixelBytes, 4 * _viewSize.width * _viewSize.height);
+    NSLog(@"take pixelBuffer snapshot after");
     CVPixelBufferUnlockBaseAddress(_pixelBuffer, 0);
+    NSLog(@"lock pixelBuffer after");
+}
+
+- (void) setShareMode {
+    _isShareMode = YES;
+}
+
+- (void) setFPS:(float)fps {
+    _fps = fps;
 }
 
 - (void) setViewSize:(CGSize)size {
@@ -657,157 +724,194 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     //    APPLY_LOGBIT(LOG_RESIZE_GLVIEW) {NSLog(@"CycordVideoRecorder$onRenderbufferStorage : _viewSize = (%d,%d)", width,height);}
     return ret;
 }
-
-- (void) onCommandBufferComplete : (id<CAMetalDrawable>)metalDrawable {
-    if (-1 == _renderingingStartTime)
-    {
-        _renderingingStartTime = getCurrentTimeMills();
-        _nextSnapshotTime = 2000;
-    }
-    
-    id<MTLTexture> texture = metalDrawable.texture;
-    
-    CVPixelBufferLockBaseAddress(_pixelBuffer, 0);//必须锁定内存
-    
-    MTLRegion region = MTLRegionMake2D(0, 0, metalDrawable.layer.drawableSize.width, metalDrawable.layer.drawableSize.height);
-    
-    int bytesPerPixel = 4;
-    int bytesPerRow = bytesPerPixel * metalDrawable.layer.drawableSize.width;
-    
-    NSLog(@"drawable.layer.drawableSize.width = %f, drawable.layer.drawableSize.height = %f", metalDrawable.layer.drawableSize.width, metalDrawable.layer.drawableSize.height);
-    NSLog(@"textureType = %lu, width = %lu, height = %lu, depth = %lu, arrayLength = %lu， mipmapLevelCount = %lu, sampleCount = %lu", texture.textureType, texture.width, texture.height, texture.depth, texture.arrayLength, texture.mipmapLevelCount, texture.sampleCount);
-    
-    void *tmpBuffer = CVPixelBufferGetBaseAddress(_pixelBuffer);
-    
-    [texture getBytes:tmpBuffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
-
-//    [_iv setImage:[self imageFromPixelBuffer:_pixelBuffer]];
-    int renderingTime = getCurrentTimeMills() - _renderingingStartTime;
-    if (-1 == _recordingStartTime)
-    {
-        _recordingStartTime = getCurrentTimeMills();
-    }
-    int elapsedTime = (int)(getCurrentTimeMills() - _recordingStartTime);
-    
-    int numFrames = (int)(elapsedTime * _fps / 1000.0f);
-    //            NSLog(@"One new frame to record. numFrames = %d, elapsedTime = %d", numFrames, elapsedTime);
-    if (0 == elapsedTime || numFrames > _recordedFrames)
-    {
-        BOOL append_ok = NO;
-        int j = 0;
-        while (!append_ok && j < 30)
-        {
-            if (_pixelBufferAdaptor.assetWriterInput.readyForMoreMediaData)
-            {
-                //            printf("appending %d attemp %d\n", _frameCounter, j);
-                
-                CMTime frameTime = CMTimeMake(elapsedTime, 1000);
-                float frameSeconds = CMTimeGetSeconds(frameTime);
-                //                NSLog(@"frameSeconds:%f", frameSeconds);
-                append_ok = [_pixelBufferAdaptor appendPixelBuffer:_pixelBuffer withPresentationTime:frameTime];
-                if (!append_ok)
-                {
-                    NSLog(@"AVAssetWriterStatus = %d", _videoWriter.status);
-                    if (AVAssetWriterStatusFailed == _videoWriter.status)
-                    {
-                        NSLog(@"videoWriter.error = %@", _videoWriter.error);
-                    }
-                }
-                //            if(buffer)
-                //                [NSThread sleepForTimeInterval:0.05];
-            }
-            else
-            {
-                //                printf("adaptor not ready %d, %d\n", _frameCounter, j);
-                //                [NSThread sleepForTimeInterval:0.1];
-            }
-            j++;
-        }
-        if (!append_ok) {
-            NSLog(@"error appending image %d times %d ms = %d\n", _recordedFrames, j, elapsedTime);
-        }
-        else {
-            //                    NSLog(@"SUCCESSFULLY appending image %d times %d ms = %d\n", _recordedFrames, j, elapsedTime);
-        }
-        ///!!!    CVPixelBufferRelease(buffer);
-        
-        //    NSData* data;
-        //    NSString* filename;
-        //    if (UIImagePNGRepresentation(image) == nil)
-        //    {
-        //        data = UIImageJPEGRepresentation(image, 1);
-        //        filename = [NSString stringWithFormat:@"%@/%d%@", _fileOutputPath,_frameCounter,@".jpg"];
-        //    }
-        //    else
-        //    {
-        //        data = UIImagePNGRepresentation(image);
-        //        filename = [NSString stringWithFormat:@"%@/%d%@", _fileOutputPath,_frameCounter,@".png"];
-        //    }
-        //    NSFileManager* fileManager = [NSFileManager defaultManager];
-        //    [fileManager createDirectoryAtPath:_fileOutputPath withIntermediateDirectories:YES attributes:nil error:nil];
-        //    [fileManager createFileAtPath:filename contents:data attributes:nil];
-        //    //把截图保存到相册里
-        //    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
-        _recordedFrames = numFrames;
-        
-        if (self.delegate)
-        {
-            [self.delegate didRecordOneFrame:(getCurrentTimeMills() - _recordingStartTime)];
-        }
-    }
-    
-    CVPixelBufferUnlockBaseAddress(_pixelBuffer, 0);//解锁内存
-}
-
-- (void) recordOneFrame:(int)videoTimeSeconds {
+/*
+ - (void) onCommandBufferComplete : (id<CAMetalDrawable>)metalDrawable {
+ if (-1 == _renderingingStartTime)
+ {
+ _renderingingStartTime = getCurrentTimeMills();
+ _nextSnapshotTime = 2000;
+ }
+ 
+ id<MTLTexture> texture = metalDrawable.texture;
+ 
+ CVPixelBufferLockBaseAddress(_pixelBuffer, 0);必须锁定内存
+ 
+ MTLRegion region = MTLRegionMake2D(0, 0, metalDrawable.layer.drawableSize.width, metalDrawable.layer.drawableSize.height);
+ 
+ int bytesPerPixel = 4;
+ int bytesPerRow = bytesPerPixel * metalDrawable.layer.drawableSize.width;
+ 
+ NSLog(@"drawable.layer.drawableSize.width = %f, drawable.layer.drawableSize.height = %f", metalDrawable.layer.drawableSize.width, metalDrawable.layer.drawableSize.height);
+ NSLog(@"textureType = %lu, width = %lu, height = %lu, depth = %lu, arrayLength = %lu， mipmapLevelCount = %lu, sampleCount = %lu", texture.textureType, texture.width, texture.height, texture.depth, texture.arrayLength, texture.mipmapLevelCount, texture.sampleCount);
+ 
+ void *tmpBuffer = CVPixelBufferGetBaseAddress(_pixelBuffer);
+ 
+ [texture getBytes:tmpBuffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
+ 
+ [_iv setImage:[self imageFromPixelBuffer:_pixelBuffer]];
+ int renderingTime = getCurrentTimeMills() - _renderingingStartTime;
+ if (-1 == _recordingStartTime)
+ {
+ _recordingStartTime = getCurrentTimeMills();
+ }
+ int elapsedTime = (int)(getCurrentTimeMills() - _recordingStartTime);
+ 
+ int numFrames = (int)(elapsedTime * _fps / 1000.0f);
+ NSLog(@"One new frame to record. numFrames = %d, elapsedTime = %d", numFrames, elapsedTime);
+ if (0 == elapsedTime || numFrames > _recordedFrames)
+ {
+ BOOL append_ok = NO;
+ int j = 0;
+ while (!append_ok && j < 30)
+ {
+ if (_pixelBufferAdaptor.assetWriterInput.readyForMoreMediaData)
+ {
+ printf("appending %d attemp %d\n", _frameCounter, j);
+ 
+ CMTime frameTime = CMTimeMake(elapsedTime, 1000);
+ float frameSeconds = CMTimeGetSeconds(frameTime);
+ NSLog(@"frameSeconds:%f", frameSeconds);
+ append_ok = [_pixelBufferAdaptor appendPixelBuffer:_pixelBuffer withPresentationTime:frameTime];
+ if (!append_ok)
+ {
+ NSLog(@"AVAssetWriterStatus = %d", _videoWriter.status);
+ if (AVAssetWriterStatusFailed == _videoWriter.status)
+ {
+ NSLog(@"videoWriter.error = %@", _videoWriter.error);
+ }
+ }
+ if(buffer)
+ [NSThread sleepForTimeInterval:0.05];
+ }
+ else
+ {
+ printf("adaptor not ready %d, %d\n", _frameCounter, j);
+ [NSThread sleepForTimeInterval:0.1];
+ }
+ j++;
+ }
+ if (!append_ok) {
+ NSLog(@"error appending image %d times %d ms = %d\n", _recordedFrames, j, elapsedTime);
+ }
+ else {
+ NSLog(@"SUCCESSFULLY appending image %d times %d ms = %d\n", _recordedFrames, j, elapsedTime);
+ }
+ /!!!    CVPixelBufferRelease(buffer);
+ 
+ NSData* data;
+ NSString* filename;
+ if (UIImagePNGRepresentation(image) == nil)
+ {
+ data = UIImageJPEGRepresentation(image, 1);
+ filename = [NSString stringWithFormat:@"%@/%d%@", _fileOutputPath,_frameCounter,@".jpg"];
+ }
+ else
+ {
+ data = UIImagePNGRepresentation(image);
+ filename = [NSString stringWithFormat:@"%@/%d%@", _fileOutputPath,_frameCounter,@".png"];
+ }
+ NSFileManager* fileManager = [NSFileManager defaultManager];
+ [fileManager createDirectoryAtPath:_fileOutputPath withIntermediateDirectories:YES attributes:nil error:nil];
+ [fileManager createFileAtPath:filename contents:data attributes:nil];
+ 把截图保存到相册里
+ UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+ _recordedFrames = numFrames;
+ 
+ if (self.delegate)
+ {
+ [self.delegate didRecordOneFrame:(getCurrentTimeMills() - _recordingStartTime)];
+ }
+ }
+ 
+ CVPixelBufferUnlockBaseAddress(_pixelBuffer, 0);解锁内存
+ }
+ //*/
+- (void) setupVideoRecorder {
     if (_isViewSizeInvalid)
     {
         [self releaseSizeDependentMembers];
-        [self createSizeDependentMembers:_viewSize];
-        
+        if (_viewSize.width > 0 && _viewSize.height > 0)
+        {
+            [self createSizeDependentMembers:_viewSize];
+        }
         _isViewSizeInvalid = NO;
     }
     CHECK_GL_ERROR();
+}
+
+- (void) recordOneFrame:(int)videoTimeMillSeconds {
+    if (!_isRecording) return;
     
-    int numFrames = (int)(videoTimeSeconds * _fps / 1000.0f);
+    [self setupVideoRecorder];
+    
+    //wrtie by spy drop the same of videoTimeMillSeconds frame
+    if (_lastWriteTimeStamp == -1)
+        _lastWriteTimeStamp = videoTimeMillSeconds;
+    else if (_lastWriteTimeStamp != videoTimeMillSeconds)
+        _lastWriteTimeStamp = videoTimeMillSeconds;
+    else
+        return;
+    
+    int numFrames = (int)(videoTimeMillSeconds * _fps / 1000.0f);
     //            NSLog(@"One new frame to record. numFrames = %d, elapsedTime = %d", numFrames, elapsedTime);
-    if (0 == videoTimeSeconds || numFrames > _recordedFrames)
+    if (0 == videoTimeMillSeconds || numFrames > _recordedFrames)
     {
         BOOL append_ok = NO;
         int j = 0;
-        while (!append_ok && j < 30)
+        NSError* appendError;
+        float frameSeconds;
+        while (!append_ok && j < 10)//0)
         {
             if (_pixelBufferAdaptor.assetWriterInput.readyForMoreMediaData)
             {
                 //            printf("appending %d attemp %d\n", _frameCounter, j);
                 
-                CMTime frameTime = CMTimeMake(videoTimeSeconds, 1000);
-//                float frameSeconds =(float)CMTimeGetSeconds(frameTime);
-                //                NSLog(@"frameSeconds:%f", frameSeconds);
+                CMTime frameTime = CMTimeMake(videoTimeMillSeconds, 1000);
+                frameSeconds =(float)CMTimeGetSeconds(frameTime);
+                NSLog(@"recordOneFrame timestamp:%f, videoTimeMillSeconds:%d", frameSeconds,videoTimeMillSeconds);
                 append_ok = [_pixelBufferAdaptor appendPixelBuffer:_pixelBuffer withPresentationTime:frameTime];
-                if (!append_ok)
+                appendError = _videoWriter.error;
+#ifdef DEBUG_VIDEORECORDER_INTERRUPTED_BY_ERROR
+                if (s_isFirstTime)
                 {
-                    NSLog(@"AVAssetWriterStatus = %ld", _videoWriter.status);
-                    if (AVAssetWriterStatusFailed == _videoWriter.status)
-                    {
-                        NSLog(@"videoWriter.error = %@", _videoWriter.error);
-                    }
+                    s_isFirstTime = false;
+                    appendError = [NSError errorWithDomain:@"CycordVideoRecorder" code:-2 userInfo:@{@"status":@(_videoWriter.status)}];
+                }
+#endif
+                _lastWriteCMTime = frameTime;
+                /*  if (!append_ok || appendError || AVAssetWriterStatusFailed == _videoWriter.status || AVAssetWriterStatusCancelled == _videoWriter.status)
+                 {
+                 NSLog(@"#CycordVideoRecorder#Bug2880# AVAssetWriterStatus = %ld, videoWriter.error = %@", (long)_videoWriter.status, appendError);
+                 if (self.delegate && [self.delegate respondsToSelector:@selector(cycordVideoRecorderFailedWhileRecording:)])
+                 {
+                 [self.delegate cycordVideoRecorderFailedWhileRecording:appendError];
+                 }
+                 }*/
+                //            if(buffer)
+                if (!append_ok || appendError || AVAssetWriterStatusFailed == _videoWriter.status || AVAssetWriterStatusCancelled == _videoWriter.status)
+                {
+                    NSLog(@"#appendPixelBuffer error AVAssetWriterStatus = %ld, videoWriter.error = %@", (long)_videoWriter.status, appendError);
+                    [NSThread sleepForTimeInterval:0.1];
                 }
                 //            if(buffer)
                 //                [NSThread sleepForTimeInterval:0.05];
             }
             else
             {
-                //                printf("adaptor not ready %d, %d\n", _frameCounter, j);
-                //                [NSThread sleepForTimeInterval:0.1];
+                NSLog(@"appendPixelBuffer adaptor not ready  %d\n",  j);
+                [NSThread sleepForTimeInterval:0.1];
             }
             j++;
         }
-        if (!append_ok) {
-            NSLog(@"error appending image %d times %d ms = %d\n", _recordedFrames, j, videoTimeSeconds);
+        if (!append_ok || AVAssetWriterStatusFailed == _videoWriter.status || AVAssetWriterStatusCancelled == _videoWriter.status) {
+            NSLog(@"error appending image %d times %d ms = %d\n", _recordedFrames, j, videoTimeMillSeconds);
+            if (self.delegate && [self.delegate respondsToSelector:@selector(cycordVideoRecorderFailedWhileRecording:)])
+            {
+                [self.delegate cycordVideoRecorderFailedWhileRecording:appendError];
+            }
         }
         else {
-            //                    NSLog(@"SUCCESSFULLY appending image %d times %d ms = %d\n", _recordedFrames, j, videoTimeSeconds);
+            NSLog(@"SUCCESSFULLY appending image %d times %d ms = %f\n", _recordedFrames, j, frameSeconds);
         }
         ///!!!    CVPixelBufferRelease(buffer);
         
@@ -830,9 +934,9 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         //    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
         _recordedFrames = numFrames;
         
-        if (self.delegate)
+        if (self.delegate && [self.delegate respondsToSelector:@selector(cycordVideoRecorderDidRecordOneFrame:)])
         {
-            [self.delegate didRecordOneFrame:videoTimeSeconds];///(int)(getCurrentTimeMills() - _recordingStartTime)];
+            [self.delegate cycordVideoRecorderDidRecordOneFrame:videoTimeMillSeconds];///(int)(getCurrentTimeMills() - _recordingStartTime)];
         }
     }
 }
@@ -848,7 +952,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     if (-1 == _renderingingStartTime)
     {
         _renderingingStartTime = getCurrentTimeMills();
-        ///!!!_nextSnapshotTime = 2000;
+        _nextSnapshotTime = 2000;
     }
     
     static GLubyte gIndices[] = {
@@ -1010,7 +1114,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         ret = gSuperPresentRenderBuffer(receiver, cmd, target);
     }
     
-    int renderingTime = getCurrentTimeMills() - _renderingingStartTime;
+    int renderingTime = (int)(getCurrentTimeMills() - _renderingingStartTime);
     //*
     @synchronized(self)
     {
@@ -1053,7 +1157,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             }
             
             // Decide whether to render offscreen next frame:
-            if (renderingTime > _nextSnapshotTime && _nextSnapshotTime > 0)
+            if (renderingTime > _nextSnapshotTime)
             {
                 _takeSnapshotNextFrame = YES;
                 //        renderNextFrame2Offscreen = YES;
@@ -1071,10 +1175,10 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     }
     //*/
     
-//    if (self.delegate)
-//    {
-//        [self.delegate didRenderOneFrame:renderingTime];
-//    }
+    //    if (self.delegate)
+    //    {
+    //        [self.delegate didRenderOneFrame:renderingTime];
+    //    }
     
     GLint renderTextureID = CVOpenGLESTextureGetName(_renderTexture);
     if (renderNextFrame2Offscreen)
@@ -1127,24 +1231,23 @@ void FKC_hookOCClasses()
         gSuperRenderBufferStorage = (RenderbufferStoragePrototype)class_getMethodImplementation(clsEAGLContext, @selector(renderbufferStorage:fromDrawable:));
         Method mtdRenderBufferStorage = class_getInstanceMethod(clsEAGLContext, @selector(renderbufferStorage:fromDrawable:));
         class_replaceMethod(clsEAGLContext, @selector(renderbufferStorage:fromDrawable:), IMP(FKC_RenderbufferStorage), method_getTypeEncoding(mtdRenderBufferStorage));
-        
         objc_registerClassPair(clsEAGLContext);
         /*
-        Class clsMTLDebugCommandBuffer = objc_getClass("MTLDebugCommandBuffer");
-//        gSuperAddCompletedHandler = (AddCompletedHandlerPrototype) class_getMethodImplementation(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
-//        Method mtdAddCompleteHandler = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
-//        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:), IMP(FKC_AddCompletedHandler), method_getTypeEncoding(mtdAddCompleteHandler));
-//        
-        gSuperPresentDrawable = (PresentDrawablePrototype) class_getMethodImplementation(clsMTLDebugCommandBuffer, @selector(presentDrawable:));
-        Method mtdPresentDrawable = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:));
-        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:), IMP(FKC_PresentDrawable), method_getTypeEncoding(mtdPresentDrawable));
-        
-        gSuperPresentDrawableAtTime = (PresentDrawableAtTimePrototype) class_getMethodImplementation(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:));
-        Method mtdPresentDrawableAtTime = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:));
-        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:), IMP(FKC_PresentDrawableAtTime), method_getTypeEncoding(mtdPresentDrawableAtTime));
-        
-        objc_registerClassPair(clsMTLDebugCommandBuffer);
-        //*/
+         Class clsMTLDebugCommandBuffer = objc_getClass("MTLDebugCommandBuffer");
+         //        gSuperAddCompletedHandler = (AddCompletedHandlerPrototype) class_getMethodImplementation(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
+         //        Method mtdAddCompleteHandler = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
+         //        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:), IMP(FKC_AddCompletedHandler), method_getTypeEncoding(mtdAddCompleteHandler));
+         //
+         gSuperPresentDrawable = (PresentDrawablePrototype) class_getMethodImplementation(clsMTLDebugCommandBuffer, @selector(presentDrawable:));
+         Method mtdPresentDrawable = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:));
+         class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:), IMP(FKC_PresentDrawable), method_getTypeEncoding(mtdPresentDrawable));
+         
+         gSuperPresentDrawableAtTime = (PresentDrawableAtTimePrototype) class_getMethodImplementation(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:));
+         Method mtdPresentDrawableAtTime = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:));
+         class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:), IMP(FKC_PresentDrawableAtTime), method_getTypeEncoding(mtdPresentDrawableAtTime));
+         
+         objc_registerClassPair(clsMTLDebugCommandBuffer);
+         //*/
         g_isClassHooked = true;
     }
 }
@@ -1166,9 +1269,9 @@ void FKC_restoreOCClasses()
         objc_registerClassPair(clsEAGLContext);
         
         Class clsMTLDebugCommandBuffer = objc_getClass("MTLDebugCommandBuffer");
-//        Method mtdAddCompleteHandler = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
-//        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:), IMP(gSuperAddCompletedHandler), method_getTypeEncoding(mtdAddCompleteHandler));
-//        
+        //        Method mtdAddCompleteHandler = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
+        //        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:), IMP(gSuperAddCompletedHandler), method_getTypeEncoding(mtdAddCompleteHandler));
+        //
         Method mtdPresentDrawable = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:));
         class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:), IMP(gSuperPresentDrawable), method_getTypeEncoding(mtdPresentDrawable));
         
@@ -1183,25 +1286,35 @@ void FKC_restoreOCClasses()
 
 - (void) setupVideoWriter : (CGSize)size
 {
-    self.videoWriter = nil;
-    self.videoWriterInput = nil;
-    self.pixelBufferAdaptor = nil;
+    //write by spy
+    _videoWriter = nil;
+    _videoWriterInput = nil;
+    _pixelBufferAdaptor = nil;
     
     NSString* fileOutputPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
     
-    NSString* filename = [NSString stringWithFormat:@"%@%s", fileOutputPath, "/video.mp4"];
+    NSString* baseFilename = [self outputVideoTmpFileBaseName];
+    NSString* filename = [fileOutputPath stringByAppendingPathComponent:baseFilename];
     //Delete file if it already exists
     NSURL* fileURL = [NSURL fileURLWithPath:filename];
     NSError* error = nil;
     [[NSFileManager defaultManager] removeItemAtURL:fileURL error:&error];
     
     _videoWriter = [[AVAssetWriter alloc] initWithURL:fileURL
-                                             fileType:AVFileTypeQuickTimeMovie
+                                             fileType:AVFileTypeAppleM4V
                                                 error:&error];
     NSParameterAssert(_videoWriter);
     
+    //*
+    double bitRate;
+     if (_isShareMode)
+     bitRate = (5 * 1024.0 * 1024.0 * size.width * size.height) / (2304.0 * 1152.0);
+     else
+     bitRate = (16 * 1024.0 * 1024.0 * size.width * size.height) / (2304.0 * 1152.0);
+    //double bitRate = [avUtils getEstimatedVideoEncodedBitrateInBps:size.width height:size.height fps:_fps qualityMode:_isShareMode];
+    
     NSDictionary* videoCompressionProps = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithDouble:1024.0*1024.0], AVVideoAverageBitRateKey,
+                                           [NSNumber numberWithDouble:bitRate], AVVideoAverageBitRateKey,
                                            nil];
     NSDictionary* videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
                                    AVVideoCodecH264, AVVideoCodecKey,
@@ -1220,10 +1333,7 @@ void FKC_restoreOCClasses()
                                                  [NSNumber numberWithInt:VIDEO_PIXEL_FORMAT], kCVPixelBufferPixelFormatTypeKey,
                                                  [NSNumber numberWithInt:size.width], kCVPixelBufferWidthKey,
                                                  [NSNumber numberWithInt:size.height], kCVPixelBufferHeightKey,
-                                                 
-                                                 //                                                 [NSNumber numberWithBool:YES], kCVPixelBufferOpenGLESCompatibilityKey,
-                                                 //                                                 [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
-                                                 
+                                                 (id)kCFBooleanTrue, (id)kCVPixelFormatOpenGLESCompatibility,//write by spy 兼容opengl纹理
                                                  nil];
     
     _pixelBufferAdaptor = [AVAssetWriterInputPixelBufferAdaptor
@@ -1231,14 +1341,25 @@ void FKC_restoreOCClasses()
                            sourcePixelBufferAttributes:sourcePixelBufferAttributes];// retain];
     NSParameterAssert(_videoWriterInput);
     NSParameterAssert([_videoWriter canAddInput:_videoWriterInput]);
-    [_videoWriter addInput:_videoWriterInput];
+    if ([_videoWriter canAddInput:_videoWriterInput])
+        [_videoWriter addInput:_videoWriterInput];
+    else{
+        NSLog(@"setupVideoWriter error");
+        return;
+    }
     
+    sourcePixelBufferAttributes = nil;
     //Start a session:
-    [_videoWriter startWriting];
-    [_videoWriter startSessionAtSourceTime:kCMTimeZero];
+    if ([_videoWriter startWriting]){
+        [_videoWriter startSessionAtSourceTime:kCMTimeZero];
+        NSLog(@"setupVideoWriter ok");
+    }
+    else{
+        NSLog(@"setupVideoWriter status:%ld,error:%@",_videoWriter.status,_videoWriter.error);
+    }
 }
 
-CVPixelBufferRef createPixelBuffer(CGSize size) {
+- (CVPixelBufferRef) createPixelBuffer:(CGSize)size {
     /*
      NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
      [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
@@ -1246,6 +1367,8 @@ CVPixelBufferRef createPixelBuffer(CGSize size) {
      [NSNumber numberWithBool:YES], kCVPixelBufferOpenGLESCompatibilityKey,
      nil];
      /*/
+    
+#if 0
     CFDictionaryRef empty; // empty value for attr value.
     CFMutableDictionaryRef options;
     empty = CFDictionaryCreate(kCFAllocatorDefault, // our empty IOSurface properties dictionary
@@ -1269,119 +1392,182 @@ CVPixelBufferRef createPixelBuffer(CGSize size) {
     
     //*/
     CVPixelBufferRef pxbuffer = NULL;
-    
     CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault, size.width,
                                           size.height, OPENGL_PIXEL_FORMAT, (CFMutableDictionaryRef) options,
                                           &pxbuffer);
+#endif
+    CVPixelBufferRef pxbuffer = NULL;
+    CVReturn status = CVPixelBufferPoolCreatePixelBuffer (kCFAllocatorDefault, [_pixelBufferAdaptor pixelBufferPool], &pxbuffer);
+    
     assert(status == kCVReturnSuccess && pxbuffer != NULL);
     //NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
     
     return pxbuffer;
 }
+/*
+ - (void) prepareToRecordAudio
+ {
+ AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+ NSError *err = nil;
+ [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord error:&err];//!!!It matters AVAudioSessionCategoryAmbient
+ if (err)
+ {
+ NSLog(@"audioSession: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
+ return;
+ }
+ 
+ err = nil;
+ [audioSession setActive:YES error:&err];
+ if (err)
+ {
+ NSLog(@"audioSession: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
+ return;
+ }
+ 
+ NSMutableDictionary *recordSetting = [[NSMutableDictionary alloc] init];
+ [recordSetting setValue :[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey:AVFormatIDKey];
+ [recordSetting setValue:[NSNumber numberWithFloat:44100.0] forKey:AVSampleRateKey];
+ [recordSetting setValue:[NSNumber numberWithInt: 2] forKey:AVNumberOfChannelsKey];
+ [recordSetting setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
+ [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
+ [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
+ 
+ Create a new dated file
+ NSString * recorderFilePath = [NSString stringWithFormat:@"%@/%@", [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"], _originalAudioOutputPath]; retain];
+ NSURL *url = [NSURL fileURLWithPath:recorderFilePath];
+ err = nil;
+ _audioRecorder = [[ AVAudioRecorder alloc] initWithURL:url settings:recordSetting error:&err];
+ if (!_audioRecorder)
+ {
+ NSLog(@"recorder: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
+ UIAlertView *alert =
+ [[UIAlertView alloc] initWithTitle: @"Warning"
+ message: [err localizedDescription]
+ delegate: nil
+ cancelButtonTitle:@"OK"
+ otherButtonTitles:nil];
+ [alert show];
+ [alert release];
+ return;
+ }
+ prepare to record
+ [_audioRecorder setDelegate:self];
+ [_audioRecorder prepareToRecord];
+ _audioRecorder.meteringEnabled = YES;
+ BOOL audioHWAvailable = audioSession.inputIsAvailable;
+ if (! audioHWAvailable)
+ {
+ UIAlertView *cantRecordAlert =
+ [[UIAlertView alloc] initWithTitle: @"Warning"
+ message: @"Audio input hardware not available"
+ delegate: nil
+ cancelButtonTitle:@"OK"
+ otherButtonTitles:nil];
+ [cantRecordAlert show];
+ [cantRecordAlert release];
+ return;
+ }
+ }
+ 
+ 
+ //代理 这里可以监听录音成功
+ - (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag
+ {
+ //    NSLog(@"recorder successfully");
+ //    UIAlertView *recorderSuccessful = [[UIAlertView alloc] initWithTitle:@"" message:@"录音成功"
+ //                                                                delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+ //    [recorderSuccessful show];
+ //    [recorderSuccessful release];
+ }
+ 
+ 
+ //代理 这里可以监听录音失败
+ - (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)arecorder error:(NSError *)error
+ {
+ 
+ //    UIAlertView *recorderFailed = [[UIAlertView alloc] initWithTitle:@"" message:@"发生错误"
+ //                                                            delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+ //    [recorderFailed show];
+ //    [recorderFailed release];
+ }
+ //*/
 
-- (void) prepareToRecordAudio
-{
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    NSError *err = nil;
-    [audioSession setCategory:/*AVAudioSessionCategoryAmbient*/AVAudioSessionCategoryPlayAndRecord error:&err];///!!!It matters
-    if (err)
-    {
-        NSLog(@"audioSession: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
-        return;
-    }
-    
-    err = nil;
-    [audioSession setActive:YES error:&err];
-    if (err)
-    {
-        NSLog(@"audioSession: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
-        return;
-    }
-    
-    NSMutableDictionary *recordSetting = [[NSMutableDictionary alloc] init];
-    [recordSetting setValue :[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey:AVFormatIDKey];
-    [recordSetting setValue:[NSNumber numberWithFloat:44100.0] forKey:AVSampleRateKey];
-    [recordSetting setValue:[NSNumber numberWithInt: 2] forKey:AVNumberOfChannelsKey];
-    [recordSetting setValue :[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
-    [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
-    [recordSetting setValue :[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
-    
-    // Create a new dated file
-    NSString * recorderFilePath = [NSString stringWithFormat:@"%@/%@.caf", [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"], @"sound"];// retain];
-    NSURL *url = [NSURL fileURLWithPath:recorderFilePath];
-    err = nil;
-    _audioRecorder = [[ AVAudioRecorder alloc] initWithURL:url settings:recordSetting error:&err];
-    if (!_audioRecorder)
-    {
-        NSLog(@"recorder: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
-        UIAlertView *alert =
-        [[UIAlertView alloc] initWithTitle: @"Warning"
-                                   message: [err localizedDescription]
-                                  delegate: nil
-                         cancelButtonTitle:@"OK"
-                         otherButtonTitles:nil];
-        [alert show];
-        //        [alert release];
-        return;
-    }
-    //prepare to record
-    [_audioRecorder setDelegate:self];
-    [_audioRecorder prepareToRecord];
-    _audioRecorder.meteringEnabled = YES;
-    BOOL audioHWAvailable = audioSession.inputIsAvailable;
-    if (! audioHWAvailable)
-    {
-        UIAlertView *cantRecordAlert =
-        [[UIAlertView alloc] initWithTitle: @"Warning"
-                                   message: @"Audio input hardware not available"
-                                  delegate: nil
-                         cancelButtonTitle:@"OK"
-                         otherButtonTitles:nil];
-        [cantRecordAlert show];
-        //        [cantRecordAlert release];
-        return;
-    }
++ (NSString*) outputAudioTmpFileBaseName:(NSString*)originalName {
+    return originalName ? [originalName stringByAppendingPathExtension:@"aac"] : @"sound.aac";
 }
 
-
-//代理 这里可以监听录音成功
-- (void)audioRecorderDidFinishRecording:(AVAudioRecorder *) aRecorder successfully:(BOOL)flag
-{
-    //    NSLog(@"recorder successfully");
-    //    UIAlertView *recorderSuccessful = [[UIAlertView alloc] initWithTitle:@"" message:@"录音成功"
-    //                                                                delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    //    [recorderSuccessful show];
-    //    [recorderSuccessful release];
++ (NSString*) outputAudioTmpFileBaseNameCapture:(NSString*)originalName {
+    return originalName ? [originalName stringByAppendingPathExtension:@"caf"] : @"sound.caf";
 }
 
-
-//代理 这里可以监听录音失败
-- (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder *)arecorder error:(NSError *)error
-{
-    
-    //    UIAlertView *recorderFailed = [[UIAlertView alloc] initWithTitle:@"" message:@"发生错误"
-    //                                                            delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-    //    [recorderFailed show];
-    //    [recorderFailed release];
++ (NSString*) outputVideoTmpFileBaseName:(NSString*)originalName {
+    return [NSString stringWithFormat:@"%@.mp4.tmp", (originalName ? originalName : @"video")];
 }
 
++ (NSString*) outputVideoFileBaseName:(NSString*)originalName {
+    return [NSString stringWithFormat:@"%@.mp4", (originalName ? originalName : @"video")];
+}
 
-- (void) compileAudioAndVideoToMovie
++ (NSString*) outputMovieFileBaseName:(NSString*)originalName {
+    NSString* destVideoBaseName = [[originalName lastPathComponent] stringByDeletingPathExtension];
+    return [NSString stringWithFormat:@"%@.mov", (destVideoBaseName ? destVideoBaseName : @"video")];
+}
+
+- (NSString*) outputAudioTmpFileBaseName {
+    //if (!_isRecording && !_isShareMode) //capturing
+    //return [self.class outputAudioTmpFileBaseNameCapture:_destVideoBaseName];
+    //    return @"capture_sound.caf";
+    //else
+    return [self.class outputAudioTmpFileBaseName:_destVideoBaseName];
+}
+
+- (NSString*) outputVideoTmpFileBaseName {
+    return [self.class outputVideoTmpFileBaseName:_destVideoBaseName];
+}
+
+- (NSString*) outputVideoFileBaseName {
+    return [self.class outputVideoFileBaseName:_destVideoBaseName];
+}
+
+- (NSString*) outputMovieFileBaseName {
+    return [self.class outputMovieFileBaseName:_destVideoBaseName];
+}
+
+- (BOOL) compileAudioAndVideoToMovie:(void(^)(NSError*, NSString*))handler
 {
     //这个方法在沙盒中把视频与录制的声音合并成一个新视频
-    AVMutableComposition* mixComposition = [AVMutableComposition composition];
-    
-    NSString* audio_inputFileName = @"sound.caf";
-    NSString* audio_inputFilePath = [NSString stringWithFormat:@"%@/%@", [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"], audio_inputFileName] ;
+    NSString* DocumentDirectory = [NSString stringWithFormat:@"%@", [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"]];
+    NSString* audio_inputFilePath = [DocumentDirectory stringByAppendingPathComponent:[self outputAudioTmpFileBaseName]];
     NSURL*    audio_inputFileUrl = [NSURL fileURLWithPath:audio_inputFilePath];
-    
-    NSString* video_inputFileName = @"video.mp4";
-    NSString* video_inputFilePath = [NSString stringWithFormat:@"%@/%@", [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"], video_inputFileName] ;
+    //*/
+    NSString* video_tmpFilePath = [DocumentDirectory stringByAppendingPathComponent:[self outputVideoTmpFileBaseName]];
+    NSString* video_inputFilePath = [DocumentDirectory stringByAppendingPathComponent:[self outputVideoFileBaseName]];
+    [[NSFileManager defaultManager] moveItemAtPath:video_tmpFilePath toPath:video_inputFilePath error:nil];
     NSURL*    video_inputFileUrl = [NSURL fileURLWithPath:video_inputFilePath];
     
-    NSString* outputFileName = @"video.mov";
-    NSString* outputFilePath = [NSString stringWithFormat:@"%@/%@", [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"], outputFileName] ;
+    NSString* outputFilePath = [DocumentDirectory stringByAppendingPathComponent:[self outputMovieFileBaseName]];
     NSURL*    outputFileUrl = [NSURL fileURLWithPath:outputFilePath];
+    
+    if (_videoWriter.status != AVAssetWriterStatusCompleted || self.encodingError)
+    {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:video_inputFilePath])
+            [[NSFileManager defaultManager] removeItemAtPath:video_inputFilePath error:nil];
+        
+        if ([[NSFileManager defaultManager] fileExistsAtPath:audio_inputFilePath])
+            [[NSFileManager defaultManager] removeItemAtPath:audio_inputFilePath error:nil];
+        
+        if (handler)
+        {
+            NSLog(@"#Bug2880# compileAudioAndVideoToMovie: _videoWriter.error=%@, self.encodingError=%@", _videoWriter.error, self.encodingError);
+            handler(_videoWriter.error ? _videoWriter.error : self.encodingError, video_tmpFilePath);
+        }
+        return NO;
+    }
+    
+    //Finish the session:
+    NSLog(@"stopRecordingPrivate _videoWriterInput markAsFinished before");
+    [_videoWriterInput markAsFinished];
+    NSLog(@"stopRecordingPrivate _videoWriterInput markAsFinished after");
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:outputFilePath])
         [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
@@ -1390,24 +1576,74 @@ CVPixelBufferRef createPixelBuffer(CGSize size) {
     
     AVURLAsset* videoAsset = [[AVURLAsset alloc]initWithURL:video_inputFileUrl options:nil];
     CMTimeRange video_timeRange = CMTimeRangeMake(kCMTimeZero,videoAsset.duration);
+    AVMutableComposition* mixComposition = [AVMutableComposition composition];
     AVMutableCompositionTrack *a_compositionVideoTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
-    [a_compositionVideoTrack insertTimeRange:video_timeRange ofTrack:[[videoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:nextClipStartTime error:nil];
+    NSArray* tracks = [videoAsset tracksWithMediaType:AVMediaTypeVideo];
+    [a_compositionVideoTrack insertTimeRange:video_timeRange ofTrack:[tracks objectAtIndex:0] atTime:nextClipStartTime error:nil];
     
-    /*///!!!
-    AVURLAsset* audioAsset = [[AVURLAsset alloc]initWithURL:audio_inputFileUrl options:nil];
-    CMTimeRange audio_timeRange = CMTimeRangeMake(kCMTimeZero, audioAsset.duration);
-    AVMutableCompositionTrack *b_compositionAudioTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
-    [b_compositionAudioTrack insertTimeRange:audio_timeRange ofTrack:[[audioAsset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0] atTime:nextClipStartTime error:nil];
-    //*/
+    if ([[NSFileManager defaultManager] fileExistsAtPath:audio_inputFilePath]) {
+        AVURLAsset* audioAsset = [[AVURLAsset alloc]initWithURL:audio_inputFileUrl options:nil];
+        if (audioAsset.duration.value > 0) {
+            CMTimeRange audio_timeRange = CMTimeRangeMake(kCMTimeZero, audioAsset.duration);
+            AVMutableCompositionTrack *b_compositionAudioTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+            [b_compositionAudioTrack insertTimeRange:audio_timeRange ofTrack:[[audioAsset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0] atTime:nextClipStartTime error:nil];
+        } else {
+            NSLog(@"audio length = 0, not exporting audio");
+        }
+    }
     
-    AVAssetExportSession* _assetExport = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:AVAssetExportPresetHighestQuality];
-    _assetExport.outputFileType = @"com.apple.quicktime-movie";
+    //AVAssetExportPresetHighestQuality write by spy change to AVAssetExportPresetPassthrough
+    AVAssetExportSession* _assetExport = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:AVAssetExportPresetPassthrough];
+    _assetExport.outputFileType = AVFileTypeQuickTimeMovie;
     _assetExport.outputURL = outputFileUrl;
+    _assetExport.shouldOptimizeForNetworkUse = NO;
     
     [_assetExport exportAsynchronouslyWithCompletionHandler:
      ^(void ) {
-     }
-     ];
+         switch (_assetExport.status) {
+             case AVAssetExportSessionStatusFailed:
+                 NSLog(@"exporting failed %@",[_assetExport error]);
+                 handler([NSError errorWithDomain:@"MadvVideoCodecCreatingFileFailed" code:-3 userInfo:nil], video_tmpFilePath);
+                 if ([[NSFileManager defaultManager] fileExistsAtPath:video_inputFilePath])
+                     remove(video_inputFilePath.UTF8String);
+                 if ([[NSFileManager defaultManager] fileExistsAtPath:audio_inputFilePath])
+                     remove(audio_inputFilePath.UTF8String);
+                 
+                 break;
+             case AVAssetExportSessionStatusCompleted:
+                 NSLog(@"exporting completed");
+                 if (handler)
+                 {
+                     if (![[NSFileManager defaultManager] fileExistsAtPath:outputFilePath])
+                     {
+                         handler([NSError errorWithDomain:@"MadvVideoCodecCreatingFileFailed" code:-3 userInfo:nil], outputFilePath);
+                     }
+                     else
+                     {
+                         handler(_videoWriter.error, outputFilePath);
+                     }
+                 }
+                 if ([[NSFileManager defaultManager] fileExistsAtPath:video_inputFilePath])
+                     remove(video_inputFilePath.UTF8String);
+                 if ([[NSFileManager defaultManager] fileExistsAtPath:audio_inputFilePath])
+                     remove(audio_inputFilePath.UTF8String);
+                 break;
+             case AVAssetExportSessionStatusCancelled:
+                 NSLog(@"export cancelled");
+                 break;
+             default:
+                 break;
+         }
+     }];
+    
+    videoAsset = nil;
+    _assetExport = nil;
+    mixComposition = nil;
+    
+    return YES;
 }
 
 @end
+
+#endif //#ifdef TARGET_OS_IOS
+

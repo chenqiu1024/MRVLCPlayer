@@ -5,6 +5,7 @@
 //  Created by FutureBoy on 12/22/14.
 //
 //
+#ifdef TARGET_OS_IOS
 
 #ifndef ClumsyCopter_CycordVideoRecorderDelegate_h
 #define ClumsyCopter_CycordVideoRecorderDelegate_h
@@ -15,10 +16,15 @@
 
 @optional
 
-- (void) didRenderOneFrame : (int)elapsedMillseconds;
+- (void) cycordVideoRecorderDidRenderOneFrame:(int)elapsedMillseconds;
 
-- (void) didRecordOneFrame : (int)recordedMillseconds;
+- (void) cycordVideoRecorderDidRecordOneFrame:(int)recordedMillseconds;
+
+- (void) cycordVideoRecorderFailedWhileRecording:(NSError*)error;
 
 @end
 
 #endif
+
+#endif //#ifdef TARGET_OS_IOS
+

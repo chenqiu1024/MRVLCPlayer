@@ -654,6 +654,11 @@
 				DEVELOPMENT_TEAM = QBAB3CS86A;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					TARGET_OS_IOS,
+				);
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
 				INFOPLIST_FILE = MRVLCPlayer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
@@ -671,6 +676,7 @@
 				DEVELOPMENT_TEAM = QBAB3CS86A;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				GCC_PREPROCESSOR_DEFINITIONS = TARGET_OS_IOS;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
 				INFOPLIST_FILE = MRVLCPlayer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
