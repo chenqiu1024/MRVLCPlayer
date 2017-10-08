@@ -36,6 +36,9 @@
     NSEnumerator<NSString* >* fileEnumerator = [[NSFileManager defaultManager] enumeratorAtPath:docDirectory];
     for (NSString* file in fileEnumerator)
     {
+        if ([file isEqualToString:@"video.mov"] || [file isEqualToString:@"video.mp4"])
+            continue;
+        
         NSString* ext = [file pathExtension].lowercaseString;
         if ([ext isEqualToString:@"mov"] || [ext isEqualToString:@"mp4"])
         {

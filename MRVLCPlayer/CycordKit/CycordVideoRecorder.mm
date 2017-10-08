@@ -926,8 +926,8 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             
             glEnable(GL_BLEND);
             glBlendFunc(GL_ONE, GL_ONE);
-            glClearColor(0.f, 1.f, 1.f, 1.f);
-            glClear(GL_COLOR_BUFFER_BIT);
+//            glClearColor(0.f, 1.f, 1.f, 1.f);
+//            glClear(GL_COLOR_BUFFER_BIT);
             glDrawElements(GL_TRIANGLES, sizeof(gIndices)/sizeof(gIndices[0]), GL_UNSIGNED_BYTE, gIndices);
             
             // Restore all GL states:

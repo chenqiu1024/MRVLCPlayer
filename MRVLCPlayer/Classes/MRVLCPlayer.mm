@@ -66,6 +66,8 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
     self.player.drawable = nil;
     self.player = nil;
     
+    [CycordVideoRecorder stopRecording];
+    
     // 注销通知
     [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
