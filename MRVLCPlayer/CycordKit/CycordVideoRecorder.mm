@@ -32,6 +32,11 @@
 #define OPENGL_PIXEL_FORMAT kCVPixelFormatType_32BGRA
 #define VIDEO_PIXEL_FORMAT kCVPixelFormatType_32BGRA
 
+static GLushort gIndices[] = {
+    2, 1, 0,
+    2, 0, 3,
+};
+
 CVPixelBufferRef createPixelBuffer(CGSize size);
 
 long getCurrentTimeMills()
@@ -83,6 +88,7 @@ long getCurrentTimeMills()
     
     GLint _vertexArray;
     GLint _arrayBuffer;
+    GLint _indexBuffer;
     
     GLint _renderProgram;
     GLint _uniTexture;
@@ -462,14 +468,16 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     
     glBindTexture(CVOpenGLESTextureGetTarget(_renderTexture),
                   CVOpenGLESTextureGetName(_renderTexture));
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
     //*
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     /*/
-     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
      //*/
     glBindTexture(GL_TEXTURE_2D, bindingTexture);
     
@@ -483,6 +491,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     _renderProgram = -1;
     _vertexArray = -1;
     _arrayBuffer = -1;
+    _indexBuffer = -1;
 }
 
 - (void) createOffscreenGLVariables {
@@ -520,10 +529,10 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     //    };
     static GLfloat VBO[] = {
         //Position, Texcoord
-        -1, -1, 0, 0,
-        -1, 1, 0, 1,
-        1, 1, 1, 1,
-        1, -1, 1, 0,
+        -1.f, -1.f, 0.f, 0.f,
+        -1.f, 1.f, 0.f, 1.f,
+        1.f, 1.f, 1.f, 1.f,
+        1.f, -1.f, 1.f, 0.f,
     };
     
     if (-1 == _vertexArray)
@@ -535,16 +544,22 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     {
         GLint vertexArrayBinding;
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &vertexArrayBinding);
-        GLint bufferBinding;
-        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bufferBinding);
+        GLint arrayBufferBinding;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBufferBinding);
+        GLint elementBufferBinding;
+        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &elementBufferBinding);
         
         glBindVertexArrayOES(_vertexArray);
         glGenBuffers(1, (GLuint*)&_arrayBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, _arrayBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(VBO), VBO, GL_STATIC_DRAW);
+        glGenBuffers(1, (GLuint*)&_indexBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(gIndices), gIndices, GL_STATIC_DRAW);
         
         glBindVertexArrayOES(vertexArrayBinding);
-        glBindBuffer(GL_ARRAY_BUFFER, bufferBinding);
+        glBindBuffer(GL_ARRAY_BUFFER, arrayBufferBinding);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferBinding);
     }
 }
 
@@ -564,6 +579,11 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     if (-1 != _arrayBuffer)
     {
         glDeleteBuffers(1, (GLuint*)&_arrayBuffer);
+    }
+    
+    if (-1 != _indexBuffer)
+    {
+        glDeleteBuffers(1, (GLuint*)&_indexBuffer);
     }
     
     if (-1 != _framebuffer)
@@ -851,11 +871,6 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         ///!!!_nextSnapshotTime = 2000;
     }
     
-    static GLubyte gIndices[] = {
-        0, 1, 2,
-        3, 0, 2,
-    };
-    
     /*
      Check if our offscreen texture2D object is attached to color attachment of the Framebuffer currently binding, if not, goto a, else b.
      a) Use glReadPixels to get pixel data. Do the ordinary work of presentRenderbuffer. Attach our offscreen Texture2D object to the Framebuffer currently binding, and attach current binding Renderbuffer to our foreground Framebuffer;
@@ -877,17 +892,86 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
         // Get previous OpenGL states:
         GLint activeTexture;
         glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTexture);
-        glActiveTexture(GL_TEXTURE0);
         CHECK_GL_ERROR();
         GLint bindingTexture;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &bindingTexture);
-        glBindTexture(GL_TEXTURE_2D, attachedObjectID);
         CHECK_GL_ERROR();
         
         bool gles1 = ([EAGLContext currentContext].API == kEAGLRenderingAPIOpenGLES1);
-        
+        ///gles1 = true;///!!!For Debug
         if (!gles1)
         {
+            GLint currentProgram;
+            glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+            
+            GLint maxVertexAttribs;
+            glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
+            GLint* isVAAEnabled = new GLint[maxVertexAttribs];
+            for (int i=maxVertexAttribs-1; i>=0; i--)
+            {
+                glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, isVAAEnabled+i);
+                glDisableVertexAttribArray(i);
+            }
+            CHECK_GL_ERROR();
+            GLint prevElementArrayBuffer, prevArrayBuffer;
+            glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prevElementArrayBuffer);
+//            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &prevArrayBuffer);
+//            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            CHECK_GL_ERROR();
+            GLint vertexArrayBinding;
+            glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &vertexArrayBinding);
+            
+            //            GLint prevBlendSrc, prevBlendDst;
+            //            glGetIntegerv(GL_BLEND_SRC, &prevBlendSrc);
+            //            glGetIntegerv(GL_BLEND_DST, &prevBlendDst);
+//                        glEnable(GL_BLEND);
+//                        glBlendFunc(GL_ONE, GL_ONE);
+            glClearColor(0.f, 1.f, 0.f, 1.f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glViewport(0, 0, _viewSize.width, _viewSize.height);
+            // :Get previous OpenGL states
+            CHECK_GL_ERROR();
+            
+            glUseProgram(_renderProgram);
+            glUniform1i(_uniTexture, 0);
+            glBindTexture(GL_TEXTURE_2D, attachedObjectID);
+            glActiveTexture(GL_TEXTURE0);
+            
+            glBindVertexArrayOES(_vertexArray);
+            glBindBuffer(GL_ARRAY_BUFFER, _arrayBuffer);
+            glEnableVertexAttribArray(_atrPosition);
+            glVertexAttribPointer(_atrPosition, 2, GL_FLOAT, false, sizeof(GLfloat)*4, 0);
+            glEnableVertexAttribArray(_atrTextureCoord);
+            glVertexAttribPointer(_atrTextureCoord, 2, GL_FLOAT, false, sizeof(GLfloat)*4, (GLvoid*)(sizeof(GLfloat)*2));
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+            CHECK_GL_ERROR();
+            ALOGE("Draw on foreground screen\n");
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+            CHECK_GL_ERROR();
+            
+            // Restore all GL states:
+            glBindVertexArrayOES(vertexArrayBinding);
+            glBindBuffer(GL_ARRAY_BUFFER, prevArrayBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementArrayBuffer);
+            for (int i=maxVertexAttribs-1; i>=0; i--)
+            {
+                if (0 != isVAAEnabled[i])
+                    glEnableVertexAttribArray(i);
+                else
+                    glDisableVertexAttribArray(i);
+            }
+            delete[] isVAAEnabled;
+            glUseProgram(currentProgram);
+//            glBlendFunc(prevBlendSrc, prevBlendDst);
+//            glClearColor(0.f, 0.f, 0.f, 1.f);
+//            glClear(GL_COLOR_BUFFER_BIT);
+//            glDisable(GL_BLEND);
+            glViewport(0, 0, _viewSize.width, _viewSize.height);
+        }
+        else
+        {
+            ///!!!For Debug:
             GLint currentProgram;
             glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
             
@@ -909,47 +993,18 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             GLint vertexArrayBinding;
             glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &vertexArrayBinding);
             glBindVertexArrayOES(_vertexArray);
+            
+            //            GLint prevBlendSrc, prevBlendDst;
+            //            glGetIntegerv(GL_BLEND_SRC, &prevBlendSrc);
+            //            glGetIntegerv(GL_BLEND_DST, &prevBlendDst);
+            //            glEnable(GL_BLEND);
+            //            glBlendFunc(GL_ONE, GL_ONE);
+            //            glClearColor(0.f, 1.f, 1.f, 1.f);
+            //            glClear(GL_COLOR_BUFFER_BIT);
             // :Get previous OpenGL states
             CHECK_GL_ERROR();
-            glUseProgram(_renderProgram);
-            glEnableVertexAttribArray(_atrTextureCoord);
-            glEnableVertexAttribArray(_atrPosition);
-            glUniform1i(_uniTexture, 0);
-            glBindBuffer(GL_ARRAY_BUFFER, _arrayBuffer);
-            glVertexAttribPointer(_atrPosition, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, 0);
-            glVertexAttribPointer(_atrTextureCoord, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, (GLvoid*)(sizeof(GLfloat)*2));
-            CHECK_GL_ERROR();
+            ///!!!:For Debug
             
-            GLint prevBlendSrc, prevBlendDst;
-            glGetIntegerv(GL_BLEND_SRC, &prevBlendSrc);
-            glGetIntegerv(GL_BLEND_DST, &prevBlendDst);
-            
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE);
-//            glClearColor(0.f, 1.f, 1.f, 1.f);
-//            glClear(GL_COLOR_BUFFER_BIT);
-            glDrawElements(GL_TRIANGLES, sizeof(gIndices)/sizeof(gIndices[0]), GL_UNSIGNED_BYTE, gIndices);
-            
-            // Restore all GL states:
-            glBindVertexArrayOES(vertexArrayBinding);
-            glBindBuffer(GL_ARRAY_BUFFER, prevArrayBuffer);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementArrayBuffer);
-            for (int i=maxVertexAttribs-1; i>=0; i--)
-            {
-                if (0 != isVAAEnabled[i])
-                    glEnableVertexAttribArray(i);
-                else
-                    glDisableVertexAttribArray(i);
-            }
-            delete[] isVAAEnabled;
-            glUseProgram(currentProgram);
-//            glBlendFunc(prevBlendSrc, prevBlendDst);
-//            glClearColor(0.f, 0.f, 0.f, 1.f);
-//            glClear(GL_COLOR_BUFFER_BIT);
-            glDisable(GL_BLEND);
-        }
-        else
-        {
             static GLfloat VBO[] = {
                 //Position, Texcoord
                 -1, -1, 0, 0,
@@ -1006,6 +1061,26 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             glPopMatrix();
             glMatrixMode(GL_MODELVIEW);
             glPopMatrix();
+            
+            ///!!!For Debug:
+            // Restore all GL states:
+            glBindVertexArrayOES(vertexArrayBinding);
+            glBindBuffer(GL_ARRAY_BUFFER, prevArrayBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementArrayBuffer);
+            for (int i=maxVertexAttribs-1; i>=0; i--)
+            {
+                if (0 != isVAAEnabled[i])
+                    glEnableVertexAttribArray(i);
+                else
+                    glDisableVertexAttribArray(i);
+            }
+            delete[] isVAAEnabled;
+            glUseProgram(currentProgram);
+            //            glBlendFunc(prevBlendSrc, prevBlendDst);
+            //            glClearColor(0.f, 0.f, 0.f, 1.f);
+            //            glClear(GL_COLOR_BUFFER_BIT);
+            //            glDisable(GL_BLEND);
+            ///!!!:For Debug
         }
         CHECK_GL_ERROR();
         

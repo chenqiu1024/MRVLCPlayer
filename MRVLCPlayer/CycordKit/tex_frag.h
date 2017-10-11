@@ -1,8 +1,9 @@
-"#ifdef GL_ES       \n\
+"#version 100 \n\
+#ifdef GL_ES       \n\
 precision highp float;       \n\
 #endif       \n\
        \n\
-varying vec2 v_texCoord;       \n\
+varying highp vec2 v_texCoord;       \n\
        \n\
 uniform sampler2D u_texture0;       \n\
        \n\
