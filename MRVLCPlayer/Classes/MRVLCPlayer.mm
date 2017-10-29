@@ -11,15 +11,20 @@
 #import <AVFoundation/AVFoundation.h>
 #import "MRVideoConst.h"
 #import "CycordVideoRecorder.h"
+#import "MRVLCPlayer-Swift.h"
+#import "Inceptionv3.h"
 
 static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
 
-@interface MRVLCPlayer ()
+@interface MRVLCPlayer () <CycordVideoRecorderDelegate>
 {
     CGRect _originFrame;
+    Inceptionv3* _inceptionV3;
 }
+
 @property (nonatomic,strong) VLCMediaPlayer *player;
 @property (nonatomic, nonnull,strong) MRVideoControlView *controlView;
+
 @end
 
 @implementation MRVLCPlayer
@@ -30,6 +35,7 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
         
         [self setupNotification];
         
+        _inceptionV3 = [[Inceptionv3 alloc] init];
     }
     return self;
 }
@@ -208,6 +214,7 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
 #pragma mark Player Logic
 - (void)play {
     [CycordVideoRecorder initVideoRecorder];
+    [CycordVideoRecorder sharedInstance].delegate = self;
     [CycordVideoRecorder startRecording];
     
     [self.player play];
@@ -244,7 +251,7 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
         self.controlView.indicatorView.hidden = YES;
         self.controlView.bgLayer.hidden = YES;
     }else if (self.player.state == VLCMediaPlayerStateStopped) {
-        [self stop];
+        [self stop]; 
     }else {
         self.controlView.indicatorView.hidden = NO;
         self.controlView.bgLayer.hidden = NO;
@@ -353,5 +360,18 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
 
 }
 
+#pragma mark    CycordVideoRecorderDelegate
+
+- (void) didRenderOneFrame:(int)elapsedMillseconds {
+    
+}
+
+- (void) didRecordOneFrame:(int)recordedMillseconds {
+    
+}
+
+- (void) willRecordOneFrame:(CVPixelBufferRef)pixelBuffer {
+    [ObjectRecognizer handlePixelBufferWithInceptionv3WithImageBuffer:pixelBuffer model:_inceptionV3];
+}
 
 @end

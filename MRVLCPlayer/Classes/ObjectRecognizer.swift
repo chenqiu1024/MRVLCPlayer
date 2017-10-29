@@ -10,23 +10,25 @@ import UIKit
 import CoreMedia
 import Vision
 
-class ObjectRecognizer: NSObject {
-    let inceptionv3model = Inceptionv3()
-    
-    static func handleImageBufferWithInceptionv3(imageBuffer: CMSampleBuffer, model: Inceptionv3) -> Inceptionv3Output? {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(imageBuffer) else {
+@objc class ObjectRecognizer: NSObject {
+    @objc public static func handlePixelBufferWithInceptionv3(imageBuffer: CVPixelBuffer?, model: Inceptionv3) -> Inceptionv3Output? {
+//        NSLog("#ML# imageBuffer = \(imageBuffer)");
+        guard let pixelBuffer = imageBuffer else {
+//            NSLog("#ML# return nil");
             return nil
         }
+//        NSLog("#ML# handleImageBufferWithInceptionv3");
         do {
             let prediction = try model.prediction(fromImage: ObjectRecognizer.resize(pixelBuffer: pixelBuffer)!)
+            NSLog("#ML# %@\n", prediction.classLabel);
             return prediction
         }
         catch let error as NSError {
-            fatalError("Unexpected error ocurred: \(error.localizedDescription).")
+            fatalError("#ML# Unexpected error ocurred: \(error.localizedDescription).")
         }
     }
     
-    static func resize(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+    @objc public static func resize(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
         let imageSide = 299
         var ciImage = CIImage(cvPixelBuffer: pixelBuffer, options: nil)
         let transform = CGAffineTransform(scaleX: CGFloat(imageSide) / CGFloat(CVPixelBufferGetWidth(pixelBuffer)), y: CGFloat(imageSide) / CGFloat(CVPixelBufferGetHeight(pixelBuffer)))
@@ -37,4 +39,7 @@ class ObjectRecognizer: NSObject {
         ciContext.render(ciImage, to: resizeBuffer!)
         return resizeBuffer
     }
+    
+    let inceptionv3model = Inceptionv3()
+
 }

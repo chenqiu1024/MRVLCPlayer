@@ -804,6 +804,10 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
                 CMTime frameTime = CMTimeMake(videoTimeSeconds, 1000);
 //                float frameSeconds =(float)CMTimeGetSeconds(frameTime);
                 //                NSLog(@"frameSeconds:%f", frameSeconds);
+                if (self.delegate && [self.delegate respondsToSelector:@selector(willRecordOneFrame:)])
+                {
+                    [self.delegate willRecordOneFrame:_pixelBuffer];
+                }
                 append_ok = [_pixelBufferAdaptor appendPixelBuffer:_pixelBuffer withPresentationTime:frameTime];
                 if (!append_ok)
                 {
@@ -946,7 +950,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
             glVertexAttribPointer(_atrTextureCoord, 2, GL_FLOAT, false, sizeof(GLfloat)*4, (GLvoid*)(sizeof(GLfloat)*2));
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
             CHECK_GL_ERROR();
-            ALOGE("Draw on foreground screen\n");
+//            ALOGE("Draw on foreground screen\n");
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
             CHECK_GL_ERROR();
             
