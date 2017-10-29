@@ -8,6 +8,13 @@
 
 #import "LocalViewConrtoller.h"
 #import "MRVLCPlayer.h"
+#import "MRVLCPlayer-Swift.h"
+
+@interface LocalViewConrtoller()
+{
+    VideoCapture* _videoCapture;
+}
+@end
 
 @implementation LocalViewConrtoller
 
@@ -22,7 +29,13 @@
         [self performSelector:@selector(setNeedsStatusBarAppearanceUpdate)];
         
     }
-    
+ 
+    VideoSpec* spec = [[VideoSpec alloc] initWithFps:5 size:CGSizeMake(299, 299)];
+    _videoCapture = [[VideoCapture alloc] initWithCameraType:CameraTypeBack preferredSpec:spec previewContainer:nil];
+    _videoCapture.imageBufferHandler = ^(CMSampleBufferRef _Nonnull sampleBuffer) {
+//        NSLog(@"sampleBuffer = %@", sampleBuffer);
+    };
+    [_videoCapture startCapture];
 }
 
 - (IBAction)localPlay:(id)sender {
