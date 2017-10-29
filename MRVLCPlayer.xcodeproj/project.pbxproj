@@ -53,6 +53,9 @@
 		42E8F5941C8E7F6600A3A595 /* Sound Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5911C8E7F6600A3A595 /* Sound Icon.png */; };
 		42E8F5951C8E7F6600A3A595 /* Sound Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5921C8E7F6600A3A595 /* Sound Icon@2x.png */; };
 		42E8F5961C8E7F6600A3A595 /* Sound Icon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 42E8F5931C8E7F6600A3A595 /* Sound Icon@3x.png */; };
+		5264743A1FA6122200788057 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526474371FA6122200788057 /* VideoCapture.swift */; };
+		5264743B1FA6122200788057 /* VideoCameraType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526474381FA6122200788057 /* VideoCameraType.swift */; };
+		5264743C1FA6122200788057 /* AVCaptureDevice+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526474391FA6122200788057 /* AVCaptureDevice+Extension.swift */; };
 		52792B2E1F9E5CB100780642 /* ObjectRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52792B2C1F9E5BA500780642 /* ObjectRecognizer.swift */; };
 		52792B321F9E608A00780642 /* Inceptionv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 52792B301F9E5FF400780642 /* Inceptionv3.mlmodel */; };
 		52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C11D1F87F2060078AFB7 /* CycordAudioRecorder.mm */; };
@@ -133,6 +136,9 @@
 		42E8F5911C8E7F6600A3A595 /* Sound Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon.png"; sourceTree = "<group>"; };
 		42E8F5921C8E7F6600A3A595 /* Sound Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon@2x.png"; sourceTree = "<group>"; };
 		42E8F5931C8E7F6600A3A595 /* Sound Icon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Sound Icon@3x.png"; sourceTree = "<group>"; };
+		526474371FA6122200788057 /* VideoCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
+		526474381FA6122200788057 /* VideoCameraType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCameraType.swift; sourceTree = "<group>"; };
+		526474391FA6122200788057 /* AVCaptureDevice+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVCaptureDevice+Extension.swift"; sourceTree = "<group>"; };
 		52792B2B1F9E5BA500780642 /* MRVLCPlayer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MRVLCPlayer-Bridging-Header.h"; sourceTree = "<group>"; };
 		52792B2C1F9E5BA500780642 /* ObjectRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectRecognizer.swift; sourceTree = "<group>"; };
 		52792B301F9E5FF400780642 /* Inceptionv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = Inceptionv3.mlmodel; sourceTree = "<group>"; };
@@ -239,6 +245,9 @@
 		184C68661C89A0FE006DF9E3 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				526474391FA6122200788057 /* AVCaptureDevice+Extension.swift */,
+				526474381FA6122200788057 /* VideoCameraType.swift */,
+				526474371FA6122200788057 /* VideoCapture.swift */,
 				4260671C1CAD4B2900093A0B /* MRVideoConst.h */,
 				184C686A1C89A0FE006DF9E3 /* MRVideoHUDView.h */,
 				184C686B1C89A0FE006DF9E3 /* MRVideoHUDView.m */,
@@ -529,6 +538,8 @@
 				52B2C15B1F87FC090078AFB7 /* ray2.c in Sources */,
 				52B2C1511F87FC090078AFB7 /* aabb.c in Sources */,
 				52B2C1591F87FC090078AFB7 /* plane.c in Sources */,
+				5264743A1FA6122200788057 /* VideoCapture.swift in Sources */,
+				5264743C1FA6122200788057 /* AVCaptureDevice+Extension.swift in Sources */,
 				52B2C1561F87FC090078AFB7 /* mat3.c in Sources */,
 				184C687F1C8AC35E006DF9E3 /* MRVLCPlayer.mm in Sources */,
 				52B2C15E1F87FC090078AFB7 /* vec3.c in Sources */,
@@ -538,6 +549,7 @@
 				52792B321F9E608A00780642 /* Inceptionv3.mlmodel in Sources */,
 				52B2C1571F87FC090078AFB7 /* mat4.c in Sources */,
 				52B2C15F1F87FC090078AFB7 /* vec4.c in Sources */,
+				5264743B1FA6122200788057 /* VideoCameraType.swift in Sources */,
 				52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */,
 				52792B2E1F9E5CB100780642 /* ObjectRecognizer.swift in Sources */,
 				52B2C15C1F87FC090078AFB7 /* utility.c in Sources */,
