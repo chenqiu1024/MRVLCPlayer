@@ -27,6 +27,7 @@
 #import <OpenGLES/ES2/glext.h>
 #import <Metal/Metal.h>
 #import <sys/time.h>
+#import "EAGLLayerCapturer.h"
 //#import "mathext.h"
 
 #define OPENGL_PIXEL_FORMAT kCVPixelFormatType_32BGRA
@@ -138,11 +139,11 @@ static RenderbufferStoragePrototype gSuperRenderBufferStorage = NULL;
 typedef BOOL (*PresentRenderbufferPrototype)(id, SEL, NSUInteger);
 static PresentRenderbufferPrototype gSuperPresentRenderBuffer = NULL;
 
-typedef void (*PresentDrawablePrototype)(id, SEL, id<MTLDrawable>);
-static PresentDrawablePrototype gSuperPresentDrawable = NULL;
-
-typedef void (*PresentDrawableAtTimePrototype)(id, SEL, id <MTLDrawable>, CFTimeInterval);
-static PresentDrawableAtTimePrototype gSuperPresentDrawableAtTime = NULL;
+//typedef void (*PresentDrawablePrototype)(id, SEL, id<MTLDrawable>);
+//static PresentDrawablePrototype gSuperPresentDrawable = NULL;
+//
+//typedef void (*PresentDrawableAtTimePrototype)(id, SEL, id <MTLDrawable>, CFTimeInterval);
+//static PresentDrawableAtTimePrototype gSuperPresentDrawableAtTime = NULL;
 
 //typedef void (*AddCompletedHandlerPrototype)(id, SEL, MTLCommandBufferHandler);
 //static AddCompletedHandlerPrototype gSuperAddCompletedHandler = NULL;
@@ -166,7 +167,7 @@ BOOL FKC_PresentRenderbuffer(id self, SEL _cmd, NSUInteger target)
         return gSuperPresentRenderBuffer(self, _cmd, target);
 }
 
-static id<CAMetalDrawable> gCurrentMetalDrawable = nil;
+//static id<CAMetalDrawable> gCurrentMetalDrawable = nil;
 
 //void FKC_AddCompletedHandler(id self, SEL _cmd, MTLCommandBufferHandler handler) {
 //    if (g_isClassHooked)
@@ -175,45 +176,45 @@ static id<CAMetalDrawable> gCurrentMetalDrawable = nil;
 //        gSuperAddCompletedHandler(self, _cmd, handler);
 //}
 
-void FKC_PresentDrawable(id self, SEL _cmd, id<MTLDrawable> drawable) {
-    if (g_isClassHooked)
-    {
-        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
-        {
-            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
-            
-            id <MTLCommandBuffer> commandBuffer = self;
-            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
-                
-                gCurrentMetalDrawable = nil;
-            }];
-        }
-        gSuperPresentDrawable(self, _cmd, drawable);
-    }
-    else
-        gSuperPresentDrawable(self, _cmd, drawable);
-}
-
-void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTimeInterval time) {
-    if (g_isClassHooked)
-    {
-        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
-        {
-            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
-            
-            id <MTLCommandBuffer> commandBuffer = self;
-            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
-                
-                gCurrentMetalDrawable = nil;
-            }];
-        }
-        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
-    }
-    else
-        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
-}
+//void FKC_PresentDrawable(id self, SEL _cmd, id<MTLDrawable> drawable) {
+//    if (g_isClassHooked)
+//    {
+//        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
+//        {
+//            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
+//
+//            id <MTLCommandBuffer> commandBuffer = self;
+//            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+//                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
+//
+//                gCurrentMetalDrawable = nil;
+//            }];
+//        }
+//        gSuperPresentDrawable(self, _cmd, drawable);
+//    }
+//    else
+//        gSuperPresentDrawable(self, _cmd, drawable);
+//}
+//
+//void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTimeInterval time) {
+//    if (g_isClassHooked)
+//    {
+//        if ([drawable conformsToProtocol:@protocol(CAMetalDrawable)])
+//        {
+//            gCurrentMetalDrawable = (id<CAMetalDrawable>) drawable;
+//
+//            id <MTLCommandBuffer> commandBuffer = self;
+//            [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+//                [[CycordVideoRecorder sharedInstance] onCommandBufferComplete:gCurrentMetalDrawable];
+//
+//                gCurrentMetalDrawable = nil;
+//            }];
+//        }
+//        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
+//    }
+//    else
+//        gSuperPresentDrawableAtTime(self, _cmd, drawable, time);
+//}
 
 @implementation CycordVideoRecorder
 
@@ -677,7 +678,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     //    APPLY_LOGBIT(LOG_RESIZE_GLVIEW) {NSLog(@"CycordVideoRecorder$onRenderbufferStorage : _viewSize = (%d,%d)", width,height);}
     return ret;
 }
-
+/*
 - (void) onCommandBufferComplete : (id<CAMetalDrawable>)metalDrawable {
     if (-1 == _renderingingStartTime)
     {
@@ -778,7 +779,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     
     CVPixelBufferUnlockBaseAddress(_pixelBuffer, 0);//解锁内存
 }
-
+//*/
 - (void) recordOneFrame:(int)videoTimeSeconds {
     if (_isViewSizeInvalid)
     {
@@ -789,7 +790,7 @@ void FKC_PresentDrawableAtTime(id self, SEL _cmd, id<MTLDrawable> drawable, CFTi
     }
     CHECK_GL_ERROR();
     
-    int numFrames = (int)(videoTimeSeconds * _fps / 1000.0f);
+    int numFrames = roundf(videoTimeSeconds * _fps / 1000.0f);
     //            NSLog(@"One new frame to record. numFrames = %d, elapsedTime = %d", numFrames, elapsedTime);
     if (0 == videoTimeSeconds || numFrames > _recordedFrames)
     {
@@ -1207,6 +1208,8 @@ void FKC_hookOCClasses()
 {
     if (!g_isClassHooked)
     {
+        [EAGLLayerCapturer beginHooking];///!!!For Debug
+        
         Class clsEAGLContext = objc_getClass("EAGLContext");
         
         gSuperPresentRenderBuffer = (PresentRenderbufferPrototype)class_getMethodImplementation(clsEAGLContext, @selector(presentRenderbuffer:));
@@ -1253,19 +1256,20 @@ void FKC_restoreOCClasses()
         class_replaceMethod(clsEAGLContext, @selector(renderbufferStorage:fromDrawable:), (IMP)gSuperRenderBufferStorage, method_getTypeEncoding(mtdRenderBufferStorage));
         
         objc_registerClassPair(clsEAGLContext);
-        
+        /*
         Class clsMTLDebugCommandBuffer = objc_getClass("MTLDebugCommandBuffer");
 //        Method mtdAddCompleteHandler = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:));
 //        class_replaceMethod(clsMTLDebugCommandBuffer, @selector(addCompletedHandler:), IMP(gSuperAddCompletedHandler), method_getTypeEncoding(mtdAddCompleteHandler));
-//        
+//
+
         Method mtdPresentDrawable = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:));
         class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:), IMP(gSuperPresentDrawable), method_getTypeEncoding(mtdPresentDrawable));
         
         Method mtdPresentDrawableAtTime = class_getInstanceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:));
         class_replaceMethod(clsMTLDebugCommandBuffer, @selector(presentDrawable:atTime:), IMP(gSuperPresentDrawableAtTime), method_getTypeEncoding(mtdPresentDrawableAtTime));
-        
+
         objc_registerClassPair(clsMTLDebugCommandBuffer);
-        
+        //*/
         g_isClassHooked = false;
     }
 }

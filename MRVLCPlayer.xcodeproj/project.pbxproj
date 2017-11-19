@@ -77,6 +77,8 @@
 		52B2C15E1F87FC090078AFB7 /* vec3.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C14F1F87FC090078AFB7 /* vec3.c */; };
 		52B2C15F1F87FC090078AFB7 /* vec4.c in Sources */ = {isa = PBXBuildFile; fileRef = 52B2C1501F87FC090078AFB7 /* vec4.c */; };
 		52CAA9CD1F66CE6500351014 /* MobileVLCKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */; };
+		52E9E8FA1FC1BD22004DAE79 /* fishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 52E9E8F81FC1BD21004DAE79 /* fishhook.c */; };
+		52E9E8FD1FC1BE5B004DAE79 /* EAGLLayerCapturer.m in Sources */ = {isa = PBXBuildFile; fileRef = 52E9E8FC1FC1BE5B004DAE79 /* EAGLLayerCapturer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -186,6 +188,10 @@
 		52B2C14F1F87FC090078AFB7 /* vec3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec3.c; sourceTree = "<group>"; };
 		52B2C1501F87FC090078AFB7 /* vec4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec4.c; sourceTree = "<group>"; };
 		52CAA9CC1F66CE6500351014 /* MobileVLCKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileVLCKit.framework; path = "../MobileVLCKit-binary/MobileVLCKit.framework"; sourceTree = "<group>"; };
+		52E9E8F81FC1BD21004DAE79 /* fishhook.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = fishhook.c; sourceTree = "<group>"; };
+		52E9E8F91FC1BD22004DAE79 /* fishhook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fishhook.h; sourceTree = "<group>"; };
+		52E9E8FB1FC1BE5B004DAE79 /* EAGLLayerCapturer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EAGLLayerCapturer.h; sourceTree = "<group>"; };
+		52E9E8FC1FC1BE5B004DAE79 /* EAGLLayerCapturer.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = EAGLLayerCapturer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -333,6 +339,8 @@
 		52B2C11B1F87F2060078AFB7 /* CycordKit */ = {
 			isa = PBXGroup;
 			children = (
+				52E9E8F81FC1BD21004DAE79 /* fishhook.c */,
+				52E9E8F91FC1BD22004DAE79 /* fishhook.h */,
 				52B2C12E1F87FC090078AFB7 /* kazmath */,
 				52B2C12D1F87FBB80078AFB7 /* Log.h */,
 				52B2C1291F87FB8A0078AFB7 /* gles2.h */,
@@ -348,6 +356,8 @@
 				52B2C1221F87F2060078AFB7 /* OpenGLHelper.mm */,
 				52B2C1231F87F2060078AFB7 /* postex_vert.h */,
 				52B2C1241F87F2060078AFB7 /* tex_frag.h */,
+				52E9E8FB1FC1BE5B004DAE79 /* EAGLLayerCapturer.h */,
+				52E9E8FC1FC1BE5B004DAE79 /* EAGLLayerCapturer.m */,
 			);
 			path = CycordKit;
 			sourceTree = "<group>";
@@ -546,6 +556,7 @@
 				52B2C15A1F87FC090078AFB7 /* quaternion.c in Sources */,
 				52B2C15D1F87FC090078AFB7 /* vec2.c in Sources */,
 				4248F6131C9E8E0E00835E8E /* RemoteViewController.m in Sources */,
+				52E9E8FD1FC1BE5B004DAE79 /* EAGLLayerCapturer.m in Sources */,
 				52792B321F9E608A00780642 /* Inceptionv3.mlmodel in Sources */,
 				52B2C1571F87FC090078AFB7 /* mat4.c in Sources */,
 				52B2C15F1F87FC090078AFB7 /* vec4.c in Sources */,
@@ -553,6 +564,7 @@
 				52B2C1251F87F2070078AFB7 /* CycordAudioRecorder.mm in Sources */,
 				52792B2E1F9E5CB100780642 /* ObjectRecognizer.swift in Sources */,
 				52B2C15C1F87FC090078AFB7 /* utility.c in Sources */,
+				52E9E8FA1FC1BD22004DAE79 /* fishhook.c in Sources */,
 				42B02DCF1C8E70FF002ACACC /* MRVideoControlView.m in Sources */,
 				52B2C1581F87FC090078AFB7 /* neon_matrix_impl.c in Sources */,
 				184C687B1C89A0FE006DF9E3 /* MRVideoHUDView.m in Sources */,
