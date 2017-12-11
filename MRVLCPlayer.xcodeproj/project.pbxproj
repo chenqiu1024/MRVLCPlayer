@@ -690,13 +690,13 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = QBAB3CS86A;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../vlc-ios-2.8.5/Pods/MobileVLCKit-unstable/MobileVLCKit-binary\"/**";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 					TARGET_OS_IOS,
 				);
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../vlc-ios-2.8.5/Pods/MobileVLCKit-unstable/MobileVLCKit-binary/MobileVLCKit.framework\"/**";
 				INFOPLIST_FILE = MRVLCPlayer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -717,9 +717,9 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = QBAB3CS86A;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../vlc-ios-2.8.5/Pods/MobileVLCKit-unstable/MobileVLCKit-binary\"/**";
 				GCC_PREPROCESSOR_DEFINITIONS = TARGET_OS_IOS;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../MobileVLCKit-binary\"/**";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../vlc-ios-2.8.5/Pods/MobileVLCKit-unstable/MobileVLCKit-binary/MobileVLCKit.framework\"/**";
 				INFOPLIST_FILE = MRVLCPlayer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

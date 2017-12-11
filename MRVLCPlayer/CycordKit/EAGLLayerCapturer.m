@@ -19,6 +19,13 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 
+/*
+ glFramebuffeRenderbuffer : Framebuffer <-> Renderbuffer
+ [EAGLContext renderbufferStorage] : EAGLSharegroup -> Renderbuffer
+ 
+ on glFramebuffeRenderbuffer : if (framebuffer.renderbuffer == eaglSharegroup.renderbuffer) {...}
+ on [EAGLContext renderbufferStorage] : if (eaglSharegroup.{Renderbuffer -> Framebuffer}[renderbuffer]) {...}
+ */
 typedef BOOL (*RenderbufferStoragePrototype)(id, SEL, NSUInteger, id<EAGLDrawable>);
 static RenderbufferStoragePrototype orig_renderBufferStorage = NULL;
 
@@ -34,6 +41,9 @@ static glFramebufferRenderbufferPrototype orig_glFramebufferRenderbuffer = NULL;
 static glFramebufferRenderbufferPrototype orig_glFramebufferRenderbufferOES = NULL;
 
 static BOOL s_isHooked = NO;
+
+static const char* kRenderbufferFramebufferMap = "kRenderbufferFramebufferMap";
+static const char* kFinalRenderbuffer = "kFinalRenderbuffer";
 
 BOOL EAGLLayerCapture_RenderbufferStorage(id self, SEL _cmd, NSUInteger target, id drawable)
 {
