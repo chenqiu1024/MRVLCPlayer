@@ -371,7 +371,7 @@ static const NSTimeInterval kVideoPlayerAnimationTimeinterval = 0.3f;
 }
 
 - (void) willRecordOneFrame:(CVPixelBufferRef)pixelBuffer {
-    [ObjectRecognizer handlePixelBufferWithInceptionv3WithImageBuffer:pixelBuffer model:_inceptionV3];
+    ///!!![ObjectRecognizer handlePixelBufferWithInceptionv3WithImageBuffer:pixelBuffer model:_inceptionV3];
 }
 
 @end
