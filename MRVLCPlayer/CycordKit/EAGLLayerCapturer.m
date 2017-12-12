@@ -19,13 +19,6 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 
-/*
- glFramebuffeRenderbuffer : Framebuffer <-> Renderbuffer
- [EAGLContext renderbufferStorage] : EAGLSharegroup -> Renderbuffer
- 
- on glFramebuffeRenderbuffer : if (framebuffer.renderbuffer == eaglSharegroup.renderbuffer) {...}
- on [EAGLContext renderbufferStorage] : if (eaglSharegroup.{Renderbuffer -> Framebuffer}[renderbuffer]) {...}
- */
 typedef BOOL (*RenderbufferStoragePrototype)(id, SEL, NSUInteger, id<EAGLDrawable>);
 static RenderbufferStoragePrototype orig_renderBufferStorage = NULL;
 
@@ -45,12 +38,62 @@ static BOOL s_isHooked = NO;
 static const char* kRenderbufferFramebufferMap = "kRenderbufferFramebufferMap";
 static const char* kFinalRenderbuffer = "kFinalRenderbuffer";
 
+/*
+ glFramebuffeRenderbuffer : Framebuffer <-> Renderbuffer
+ [EAGLContext renderbufferStorage] : EAGLSharegroup -> Renderbuffer
+ 
+ on glFramebuffeRenderbuffer : if (framebuffer.renderbuffer == eaglSharegroup.renderbuffer) {...}
+ on [EAGLContext renderbufferStorage] : if (eaglSharegroup.{Renderbuffer -> Framebuffer}[renderbuffer]) {...}
+ 
+ OffscreenTexture linksTo Drawable(CAEAGLLayer);
+ Renderbuffer attachesTo Drawable;
+ Renderbuffer attachesTo Framebuffer;
+ Anytime we find a Framebuffer -> Renderbuffer -> Drawable link, we should break it by:
+ Framebuffer -> OffscreenTexture + OnscreenFramebuffer -> Renderbuffer -> Drawable;
+ 
+ 
+ Condition: Binding framebuffer.colorAttachment == eaglShareGroup.finalRenderbuffer
+ A:
+ glBindRenderbuffer(renderbuffer);
+ [EAGLContext renderbufferStorage: drawable:layer];
+ glBindFramebuffer(framebuffer);
+ glFramebuffeRenderbuffer(framebuffer, renderbuffer);
+ DRAW;
+ [EAGLContext presentRenderbuffer];
+ 
+ B:
+ glBindFramebuffer(framebuffer);
+ glFramebuffeRenderbuffer(framebuffer, renderbuffer);
+ DRAW;
+ glBindRenderbuffer(renderbuffer);
+ [EAGLContext renderbufferStorage: drawable:layer];
+ DRAW;
+ [EAGLContext presentRenderbuffer];
+ */
 BOOL EAGLLayerCapture_RenderbufferStorage(id self, SEL _cmd, NSUInteger target, id drawable)
 {
     //    NSLog(@"FKC_RenderbufferStorage $ self = %@, _cmd = %s, target = %ld, drawable = %@", self,_cmd,target,drawable);
     if (s_isHooked)
+    {
+        EAGLContext* context = (EAGLContext*) self;
+        EAGLSharegroup* shareGroup = context.sharegroup;
+        
+        GLint finalRenderbuffer = 0;
+        glGetIntegerv(GL_RENDERBUFFER_BINDING, &finalRenderbuffer);
+        NSNumber* finalRenderbufferObj = @(finalRenderbuffer);
+        objc_setAssociatedObject(shareGroup, kFinalRenderbuffer, finalRenderbufferObj, OBJC_ASSOCIATION_COPY);
+        NSDictionary<NSNumber*, NSNumber* >* renderbuffer2FramebufferMap = objc_getAssociatedObject(shareGroup, kRenderbufferFramebufferMap);
+        if (renderbuffer2FramebufferMap)
+        {
+            NSNumber* framebufferObj = renderbuffer2FramebufferMap[finalRenderbufferObj];
+            if (framebufferObj)
+            {
+                //TODO:
+            }
+        }
         //return [[CycordVideoRecorder sharedInstance] onRenderbufferStorage:self cmd:_cmd target:target drawable:drawable];
         return YES;
+    }
     else
         return orig_renderBufferStorage(self, _cmd, target, drawable);
 }
